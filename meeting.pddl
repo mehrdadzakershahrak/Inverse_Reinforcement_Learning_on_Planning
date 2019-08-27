@@ -107,10 +107,10 @@
 )
 
 (:action walk
-:parameters (?j-John ?t-five_minutes ?h-Home ?r-Restaurant) 
-:precondition (and (car_not_works ?j) (at ?h ?j) (have_twentyfive_minutes_for_drive)
+:parameters (?j-John ?t-five_minutes ?s-Start ?e-End) 
+:precondition (and (car_not_works ?j) (at ?s ?j) (have_five_minutes_for_walk ?j)
 	    )
-:effect (and (dressed_for_formal_meeting ?j) (not (have_twentyfive_minutes_for_drive ?j)) (not (at ?h ?j)) (at ?r ?j)
+:effect (and (not (have_five_minutes_for_walk ?j)) (not (at ?s ?j)) (at ?e ?j)
 		)
 )
 
