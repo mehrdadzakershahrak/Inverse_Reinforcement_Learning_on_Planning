@@ -15,7 +15,7 @@
 (lunch_packed ?j - John)
 (have_five_minutes_for_packlunch ?j - John)
 (car_not_works ?j - John)
-(at ?j - John ?start - loc)
+(at ?start - loc)
 )
 
 (:action make_instant_coffee
@@ -54,9 +54,9 @@
 
 (:action goes
 :parameters (?j-John ?t-time ?start-loc ?dest-loc) 
-:precondition (and (car_not_works ?j) (at ?j ?start) (can-move ?start ?dest ?t)
+:precondition (and (car_not_works ?j) (at ?start) (can-move ?start ?dest ?t)
 	    )
-:effect (and (not (at ?j ?start)) (at ?j ?dest)
+:effect (and (not (at ?start)) (at ?dest)
 		)
 )
 
