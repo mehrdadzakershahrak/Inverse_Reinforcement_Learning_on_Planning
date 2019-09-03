@@ -26,11 +26,27 @@
 		)
 )
 
+(:action brew_coffee
+:parameters (?j-John )
+:precondition (and (not_have_coffee_beans ?j) (have_fifteen_minutes_for_coffee ?j)
+	    )
+:effect (and (coffee_ready ?j) (not (have_fifteen_minutes_for_coffee ?j))
+		)
+)
+
 (:action eats_small_breakfast
 :parameters (?j-John )
 :precondition (and (have_five_minutes_for_breakfast ?j)
 	    )
 :effect (and (breakfast_ready ?j) (not (have_five_minutes_for_breakfast ?j))
+		)
+)
+
+(:action eats_large_breakfast
+:parameters (?j-John )
+:precondition (and (have_twenty_minutes_for_breakfast ?j)
+	    )
+:effect (and (breakfast_ready ?j) (not (have_twenty_minutes_for_breakfast ?j))
 		)
 )
 
@@ -40,6 +56,14 @@
 :precondition (and (have_formall_meeting ?j) (have_fifteen_minutes_for_dress ?j)
 	    )
 :effect (and (dressed_for_formal-meeting ?j) (not (have_fifteen_minutes_for_dress ?j))
+		)
+)
+
+(:action dress
+:parameters (?j-John )
+:precondition (and (have_ten_minutes_for_dress ?j)
+	    )
+:effect (and (not (have_ten_minutes_for_dress ?j))
 		)
 )
 
