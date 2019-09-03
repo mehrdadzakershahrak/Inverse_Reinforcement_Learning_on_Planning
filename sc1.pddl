@@ -16,6 +16,10 @@
 (can-move mechanic work need_ten_minutes)
 (at home)
 (not_have_coffee_beans j)
+(have_five_minutes_for_coffee j)
+(have_five_minutes_for_breakfast j)
+(have_five_minutes_for_lunch j)
+(have_formall_meeting j)
 )
 
 (:goal (and
