@@ -16,6 +16,12 @@
 (have_five_minutes_for_packlunch ?j - John)
 (car_not_works ?j - John)
 (at ?start - loc)
+(not_have_coffee_beans ?j - John)
+(have_fifteen_minutes_for_coffee ?j - John)
+(have_twenty_minutes_for_breakfast ?j - John)
+(have_ten_minutes_for_dress ?j - John)
+(have_twenty_minutes_for_meeting ?j - John)
+(meeting_happened ?j-John)
 )
 
 (:action make_instant_coffee
@@ -28,7 +34,7 @@
 
 (:action brew_coffee
 :parameters (?j-John )
-:precondition (and (not_have_coffee_beans ?j) (have_fifteen_minutes_for_coffee ?j)
+:precondition (and (have_fifteen_minutes_for_coffee ?j)
 	    )
 :effect (and (coffee_ready ?j) (not (have_fifteen_minutes_for_coffee ?j))
 		)
@@ -102,7 +108,7 @@
 
 (:action has_remote_meeting
 :parameters (?j-John ?h-Home)
-:precondition (and (have_twenty_minutes_for_meeting ?j) (at ?j ?h)
+:precondition (and (have_twenty_minutes_for_meeting ?j) (at ?h)
 	    )
 :effect (and (meeting_happened ?j) (not (have_twenty_minutes_for_meeting ?j))
 		)
