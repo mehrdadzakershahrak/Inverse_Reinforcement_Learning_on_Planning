@@ -1,4 +1,4 @@
-(define (problem scenario1) (:domain meeting_1)
+(define (problem scenario1) (:domain Meeting)
 (:objects
 	home mechanic rNearWork rNearHome work - loc
     need_five_minutes need_twentyfive_minutes need_thirtyfive_minutes need_ten_minutes need_fifteen_minutes - time
