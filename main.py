@@ -4,7 +4,7 @@ import maxent
 
 def get_plan_distance(plan_a, plan_b):
 	plan_a = set(plan_a)
-	plan_b = set(plan_b) 
+	plan_b = set(plan_b)
 	return len(plan_a.intersection(plan_b))/len(plan_a.union(plan_b))
 
 def get_plan():
@@ -23,15 +23,15 @@ def write_file(explanation, add):
 
 	with open('file_name', 'r') as file:
 		data = file.readlines()
-	
+
 	if add:
 		data[line] = data[line] + " " + explanation
 	else:
 		data[line] = data[line].replace(explanation, '')
 
-	with open('file_name', 'r') as file:
+	with open('file_name', '+w') as file:
 		file.writelines(data)
-	
+
 
 
 
@@ -39,8 +39,8 @@ def main():
 
 	#plan = os.popen('./planner/fast-downward.py domain.pddl pfile01 --search "astar(lmcut())"').read()
 	#proc_plan = plan.split('\n')
-	
-	# get base plan 
+
+	# get base plan
 	curent_plan, current_cost = get_plan()
 
 	# cost = [i for i, s in enumerate(proc_plan) if 'Plan cost:' in s]
@@ -57,9 +57,9 @@ def main():
 	for explanations in explanation_set:
 		trajectory = []
 		for explanation in explanations:
-			
+
 			#modify pddl
-			
+
 
 			#get plan
 			new_plan, new_cost = get_plan()
@@ -74,7 +74,7 @@ def main():
 
 			curent_plan = new_plan
 			current_cost =  new_cost
-			
+
 		trajectories += [trajectory]
 
 	print(trajectories)
