@@ -15,6 +15,26 @@ def get_plan():
 	plan_cost = proc_plan[cost[0]].split(' ')[-1]
 	return plan, plan_cost
 
+def write_file(explanation, add):
+	expl_line = {'(not_have_coffee_beans ?j)': 23, '(have_five_minutes_for_breakfast ?j)' : 33,
+					 '(have_formall_meeting ?j)' : 40, '(not_enough_lunch_time ?j)': 49,
+					 '(dressed_for_formal-meeting ?j)': 65, '(at ?j ?h)' : 81}
+	line = expl_line[explanation]
+
+	with open('file_name', 'r') as file:
+		data = file.readlines()
+	
+	if add:
+		data[line] = data[line] + " " + explanation
+	else:
+		data[line] = data[line].replace(explanation, '')
+
+	with open('file_name', 'r') as file:
+		file.writelines(data)
+	
+
+
+
 def main():
 
 	#plan = os.popen('./planner/fast-downward.py domain.pddl pfile01 --search "astar(lmcut())"').read()
