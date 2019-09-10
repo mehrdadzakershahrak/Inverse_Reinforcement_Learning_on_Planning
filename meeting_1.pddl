@@ -25,13 +25,8 @@
 )
 
 (:action make_instant_coffee
-<<<<<<< HEAD
-:parameters (?j - John )
-:precondition (and (not_have_coffee_beans ?j) (have_five_minutes_for_coffee ?j)
-=======
 :parameters (?j-John )
 :precondition (and (have_five_minutes_for_coffee ?j) (not_have_coffee_beans ?j)
->>>>>>> domain update
 	    )
 :effect (and (coffee_ready ?j) (not (have_five_minutes_for_coffee ?j))
 		)
@@ -63,13 +58,8 @@
 
 
 (:action dress_formally
-<<<<<<< HEAD
-:parameters (?j - John )
-:precondition (and (have_formall_meeting ?j) (have_fifteen_minutes_for_dress ?j)
-=======
 :parameters (?j-John )
 :precondition (and (have_fifteen_minutes_for_dress ?j) (have_formall_meeting ?j)
->>>>>>> domain update
 	    )
 :effect (and (dressed_for_formal-meeting ?j) (not (have_fifteen_minutes_for_dress ?j))
 		)
@@ -85,13 +75,8 @@
 
 
 (:action packs_lunch
-<<<<<<< HEAD
-:parameters (?j - John )
-:precondition (and (not_enough_lunch_time ?j) (have_five_minutes_for_lunch ?j)
-=======
 :parameters (?j-John )
 :precondition (and (have_five_minutes_for_lunch ?j) (not_enough_lunch_time ?j) 
->>>>>>> domain update
 	    )
 :effect (and (lunch_packed ?j) (not (have_five_minutes_for_packlunch ?j))
 		)
