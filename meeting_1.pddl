@@ -18,7 +18,9 @@
 (at ?start - loc)
 (not_have_coffee_beans ?j - John)
 (have_fifteen_minutes_for_coffee ?j - John)
+(have_ten_minutes_for_coffee ?j - John)
 (have_twenty_minutes_for_breakfast ?j - John)
+(have_ten_minutes_for_breakfast ?j - John)
 (have_ten_minutes_for_dress ?j - John)
 (have_twenty_minutes_for_meeting ?j - John)
 (meeting_happened ?j - John)
@@ -29,6 +31,14 @@
 :precondition (and (have_five_minutes_for_coffee ?j) (not_have_coffee_beans ?j)
 	    )
 :effect (and (coffee_ready ?j) (not (have_five_minutes_for_coffee ?j))
+		)
+)
+
+(:action coffee_near_home
+:parameters (?j-John )
+:precondition (and (have_ten_minutes_for_coffee ?j) (not_have_coffee_beans ?j)
+	    )
+:effect (and (coffee_ready ?j) (not (have_ten_minutes_for_coffee ?j))
 		)
 )
 
@@ -47,6 +57,15 @@
 :effect (and (breakfast_ready ?j) (not (have_five_minutes_for_breakfast ?j))
 		)
 )
+
+(:action eats_small_breakfast_near_home
+:parameters (?j - John )
+:precondition (and (have_ten_minutes_for_breakfast ?j)
+	    )
+:effect (and (breakfast_ready ?j) (not (have_ten_minutes_for_breakfast ?j))
+		)
+)
+
 
 (:action eats_large_breakfast
 :parameters (?j - John )
