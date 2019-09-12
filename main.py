@@ -188,7 +188,7 @@ def main():
 	#map of states and corresponding state numbers
 	states_dict = get_state_map(num_actions)
 	
-	#map of explanations and actions ?????????????????????????????????????????????????????
+	#map of explanations and actions
 	explanation_map = get_explanation_map(problem_num)
 
 	# explanations from train data (3-D data)
@@ -200,7 +200,7 @@ def main():
 		trajectory = [0]
 		actions_taken=[]
 		for explanation in explanations:
-			action = explanation_map(explanation)
+			action = explanation_map[explanation]
 			next_state = states_dict[tuple(set(actions_taken).add(action))]
 
 			trajectory += [next_state] 
@@ -222,6 +222,8 @@ def main():
 
 	#get feature mattrix
 	feature_matrix =  get_feature_matrix()
+
+	feature_matrix = feature_matrix.reshape((num_features, num_states*num_states))
 
 	#call IRL
 	rewards = maxent.irl(feature_matrix, num_actions, gamma, transition_matrix, trajectories, n_iters, learning_rate)
