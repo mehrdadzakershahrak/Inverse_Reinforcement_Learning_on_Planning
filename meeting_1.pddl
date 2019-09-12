@@ -7,7 +7,7 @@
 (have_five_minutes_for_coffee ?j - John)
 (breakfast_ready ?j - John)
 (can-move ?start - loc ?end - loc ?t - time)
-(have_formall_meeting ?j - John)
+(have_formal_meeting ?j - John)
 (dressed_for_formal-meeting ?j - John)
 (have_fifteen_minutes_for_dress ?j - John)
 (have_five_minutes_for_lunch ?j - John)
@@ -78,7 +78,7 @@
 
 (:action dress_formally
 :parameters (?j-John )
-:precondition (and (have_fifteen_minutes_for_dress ?j) (have_formall_meeting ?j)
+:precondition (and (have_fifteen_minutes_for_dress ?j) (have_formal_meeting ?j)
 	    )
 :effect (and (dressed_for_formal-meeting ?j) (not (have_fifteen_minutes_for_dress ?j))
 		)
@@ -119,7 +119,7 @@
 
 (:action has_meeting
 :parameters (?j - John )
-:precondition (and (have_twenty_minutes_for_meeting ?j)
+:precondition (and (have_twenty_minutes_for_meeting ?j) (has_normal_meeting ?j)
 	    )
 :effect (and (meeting_happened ?j) (not (have_twenty_minutes_for_meeting ?j))
 		)
