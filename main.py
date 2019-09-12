@@ -1,7 +1,7 @@
 import lavenstein
 import os
 import numpy as np
-#import maxent
+import maxent
 import math
 from itertools import chain, combinations
 
@@ -25,7 +25,6 @@ def get_plan():
 
 def get_state_map(num_actions):
 	states = list(powerset(range(num_actions)))
-
 	states_dict = {}
 	for i in range(len(states)):
 		#states_dict[i] = list(states[i])
@@ -182,7 +181,7 @@ def get_explanation_data():
 
 def main():
 	
-	num_actions = 3
+	num_actions = 4
 	problem_num = 1
 
 	#map of states and corresponding state numbers
