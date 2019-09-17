@@ -24,6 +24,7 @@
 (have_ten_minutes_for_dress ?j - John)
 (have_twenty_minutes_for_meeting ?j - John)
 (meeting_happened ?j - John)
+(has_normal_meeting ?j - John)
 )
 
 (:action make_instant_coffee

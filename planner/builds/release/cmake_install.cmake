@@ -1,4 +1,4 @@
-# Install script for directory: /Users/mehrdad/Documents/workspace/AI/Distance Learning for PEG/planner/src
+# Install script for directory: /home/akshay/Distance-Learning/planner/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -27,14 +27,14 @@ if(NOT CMAKE_INSTALL_COMPONENT)
   endif()
 endif()
 
-# Is this installation the result of a crosscompile?
-if(NOT DEFINED CMAKE_CROSSCOMPILING)
-  set(CMAKE_CROSSCOMPILING "FALSE")
+# Install shared libraries without execute permission?
+if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
+  set(CMAKE_INSTALL_SO_NO_EXE "1")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/Users/mehrdad/Documents/workspace/AI/Distance Learning for PEG/planner/builds/release/search/cmake_install.cmake")
+  include("/home/akshay/Distance-Learning/planner/builds/release/search/cmake_install.cmake")
 
 endif()
 
@@ -46,5 +46,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/mehrdad/Documents/workspace/AI/Distance Learning for PEG/planner/builds/release/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/akshay/Distance-Learning/planner/builds/release/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

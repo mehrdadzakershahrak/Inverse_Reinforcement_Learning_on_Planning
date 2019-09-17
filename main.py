@@ -4,6 +4,8 @@ import numpy as np
 import maxent
 import math
 from itertools import chain, combinations
+import pandas as pd
+
 
 
 def powerset(iterable):
@@ -16,7 +18,7 @@ def get_plan_distance(plan_a, plan_b):
 	return len(plan_a.intersection(plan_b))/len(plan_a.union(plan_b))
 
 def get_plan():
-	plan = os.popen('./planner/fast-downward.py domain.pddl pfile01 --search "astar(lmcut())"').read()
+	plan = os.popen('./planner/fast-downward.py meeting_1.pddl sc1.pddl --search "astar(lmcut())"').read()
 	proc_plan = plan.split('\n')
 	cost = [i for i, s in enumerate(proc_plan) if 'Plan cost:' in s]
 	plan = proc_plan[proc_plan.index('Solution found!')+2: cost[0]-1]
@@ -144,8 +146,8 @@ def get_explanation_map(problem_num):
 	return explanation_map
 
 
-def get_feature_matrix(num_features, num_states):
-	feature_matrix = np.zeros(num_features, num_states, num_states)
+def get_feature_matrix(num_features, num_states, num_actions):
+	feature_matrix = np.zeros((num_features, num_states, num_states))
 	
 	states_dict = get_state_map(num_actions)
 
@@ -176,8 +178,19 @@ def get_feature_matrix(num_features, num_states):
 			write_file(explanation_map(a), false)
 
 def get_explanation_data():
-	pass
-
+	# data = pd.read_csv("datap1.csv")
+	# #data = np.array(data)
+	# print(data.sample(3))
+	# jefgei
+	# return data[:,3:]
+	data = [["There are no coffee beans", "There is a formal meeting", "Car doesn't start", "Not enough lunch time"],
+			["There are no coffee beans", "Car doesn't start", "There is a formal meeting", "Not enough lunch time"],
+			["There is a formal meeting", "There are no coffee beans", "Not enough lunch time", "Car doesn't start"],
+			["There are no coffee beans", "There is a formal meeting", "Not enough lunch time", "Car doesn't start"],
+			["Car doesn't start", "There are no coffee beans", "There is a formal meeting", "Not enough lunch time"],
+			["There are no coffee beans", "Car doesn't start", "There is a formal meeting", "Not enough lunch time"]
+			]
+	return data
 
 def main():
 	
@@ -192,6 +205,7 @@ def main():
 
 	# explanations from train data (3-D data)
 	explanation_set = get_explanation_data()
+	print(explanation_set)
 
 	#make trajectories
 	trajectories = []
@@ -200,7 +214,9 @@ def main():
 		actions_taken=[]
 		for explanation in explanations:
 			action = explanation_map[explanation]
-			next_state = states_dict[tuple(set(actions_taken).add(action))]
+			temp = set(actions_taken)
+			temp.add(action)
+			next_state = states_dict[tuple(temp)]
 
 			trajectory += [next_state] 
 			actions_taken += [action]
@@ -208,6 +224,7 @@ def main():
 		trajectories += [trajectory]
 
 	print(trajectories)
+	
 
 	# call IRL Function ( reward-----> R(s, s') )
 	n_iters = 1000
@@ -220,7 +237,7 @@ def main():
 	transition_matrix = get_transition_function(num_actions)
 
 	#get feature mattrix
-	feature_matrix =  get_feature_matrix()
+	feature_matrix =  get_feature_matrix(num_features, num_states, num_actions)
 
 	feature_matrix = feature_matrix.reshape((num_features, num_states*num_states))
 
