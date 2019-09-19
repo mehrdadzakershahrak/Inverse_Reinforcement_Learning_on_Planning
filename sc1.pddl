@@ -1,7 +1,7 @@
 (define (problem sc1) (:domain meeting_1)
 (:objects
 	home mechanic rNearWork rNearHome work - loc
-    need_five_minutes need_twentyfive_minutes need_thirtyfive_minutes need_ten_minutes need_fifteen_minutes - time
+    need_five_minutes need_twentyfive_minutes - time
     j - John
 
 )
@@ -16,7 +16,7 @@
 (have_five_minutes_for_lunch j)
 (not_enough_lunch_time j)
 (have_fifteen_minutes_for_dress j)
-(have_twenty_minutes_for_meeting j)
+(have_twenty_minutes_for_meeting_restaurant j)
 (have_formal_meeting j)
 (car_not_works j)
 )

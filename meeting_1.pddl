@@ -25,6 +25,7 @@
 (have_twenty_minutes_for_meeting ?j - John)
 (meeting_happened ?j - John)
 (has_normal_meeting ?j - John)
+(have_twenty_minutes_for_meeting_restaurant ?j - John)
 )
 
 (:action make_instant_coffee
@@ -113,6 +114,14 @@
 (:action has_formal_meeting
 :parameters (?j - John )
 :precondition (and (have_twenty_minutes_for_meeting ?j) (dressed_for_formal_meeting ?j)
+	    )
+:effect (and (meeting_happened ?j) (not (have_twenty_minutes_for_meeting ?j))
+		)
+)
+
+(:action has_formal_meeting_at_restaurant_nearWork
+:parameters (?j - John  ) 
+:precondition (and (have_twenty_minutes_for_meeting_restaurant ?j) (dressed_for_formal_meeting ?j)
 	    )
 :effect (and (meeting_happened ?j) (not (have_twenty_minutes_for_meeting ?j))
 		)
