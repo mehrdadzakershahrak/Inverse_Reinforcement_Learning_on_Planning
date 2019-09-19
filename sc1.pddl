@@ -7,13 +7,8 @@
 )
 
 (:init
-(can-move home mechanic need_fifteen_minutes)
-(can-move home rNearHome need_five_minutes)
 (can-move rNearWork work need_five_minutes)
-(can-move rNearHome work need_twentyfive_minutes)
 (can-move home rNearWork need_twentyfive_minutes)
-(can-move home work need_thirtyfive_minutes)
-(can-move mechanic work need_ten_minutes)
 (at home)
 (not_have_coffee_beans j)
 (have_five_minutes_for_coffee j)
