@@ -10,7 +10,7 @@ from itertools import product
 import numpy as np
 import numpy.random as rn
 
-from . import value_iteration
+import value_iteration
 
 def irl(feature_matrix, n_actions, discount, transition_probability,
         trajectories, epochs, learning_rate):
@@ -68,7 +68,8 @@ def find_svf(n_states, trajectories):
     svf = np.zeros(n_states)
 
     for trajectory in trajectories:
-        for state, _, _ in trajectory:
+        #for state, _, _ in trajectory:
+        for state in trajectory:
             svf[state] += 1
 
     svf /= trajectories.shape[0]
@@ -92,7 +93,8 @@ def find_feature_expectations(feature_matrix, trajectories):
     feature_expectations = np.zeros(feature_matrix.shape[1])
 
     for trajectory in trajectories:
-        for state, _, _ in trajectory:
+        #for state, _, _ in trajectory:
+        for state in trajectory:
             feature_expectations += feature_matrix[state]
 
     feature_expectations /= trajectories.shape[0]

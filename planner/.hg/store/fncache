@@ -1377,6 +1377,7 @@ data/benchmarks/pathways/p01.pddl.i
 data/benchmarks/woodworking-opt11-strips/p13.pddl.i
 data/experiments/issue655/ms-parser.py.i
 data/benchmarks/miconic-fulladl/f24-0.pddl.i
+data/misc/tests/valgrind/dl_catch_error.supp.i
 data/src/VAL/random.h.i
 data/benchmarks/psr-middle/p17-s61-n4-l5-f30.pddl.i
 data/benchmarks/transport-opt08-strips/p05.pddl.i
@@ -2010,6 +2011,7 @@ data/src/search/merge_and_shrink/merge_scoring_function_single_random.cc.i
 data/benchmarks/logistics00/probLOGISTICS-15-0.pddl.i
 data/benchmarks/elevators-sat11-strips/p11.pddl.i
 data/benchmarks/parcprinter-08-strips/p18.pddl.i
+data/misc/tests/valgrind/dlopen.supp.i
 data/scripts/stuff/issue7/check-sasplus.py.i
 data/benchmarks/citycar-agl14-adl/p4-5-3-0-1.pddl.i
 data/benchmarks/openstacks-opt08-adl/p27-domain.pddl.i
