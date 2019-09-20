@@ -145,16 +145,26 @@ def get_explanation_map(problem_num):
 
 	return explanation_map
 
+def get_explanation_map_r(problem_num):
+	if problem_num==1:
+		explanation_map_r = [
+							"Car doesn't start",
+							'Not enough lunch time',
+							'There is a formal meeting',
+							'There are no coffee beans'
+							]
+	return explanation_map_r
 
-def get_feature_matrix(num_features, num_states, num_actions):
+def get_feature_matrix(num_features, num_states, num_actions, explanation_map_r):
 	feature_matrix = np.zeros((num_features, num_states, num_states))
 	
 	states_dict = get_state_map(num_actions)
 
+	predicate_map = get_predicate()
 
 	for i in list(states_dict.keys()):
 		for a in i:
-			write_file(explanation_map(a), True)
+			write_file(predicate_map[explanation_map_r[a]], True)
 
 		curent_plan, current_cost = get_plan()
 		for action in range(num_actions):
@@ -162,8 +172,10 @@ def get_feature_matrix(num_features, num_states, num_actions):
 				temp = set(i)
 				temp.add(action)
 
+				print(temp)
+
 				#add explanation to domain
-				write_file(explanation_map(action), True)
+				write_file(predicate_map[explanation_map_r[action]], True)
 
 				#Re-Plan
 				new_plan, new_cost = get_plan()
@@ -173,9 +185,9 @@ def get_feature_matrix(num_features, num_states, num_actions):
 				feature_matrix[1, states_dict[i], states_dict[tuple(temp)]] = get_plan_distance(new_plan, curent_plan)
 				feature_matrix[2, states_dict[i], states_dict[tuple(temp)]] = lavenstein.leven(lavenstein.listToString(new_plan), lavenstein.listToString(curent_plan))
 
-				write_file(explanation_map(action), False)
+				write_file(predicate_map[explanation_map_r[action]], False)
 		for a in i:
-			write_file(explanation_map(a), false)
+			write_file(predicate_map[explanation_map_r[a]], false)
 
 def get_explanation_data():
 	# data = pd.read_csv("datap1.csv")
@@ -202,10 +214,12 @@ def main():
 	
 	#map of explanations and actions
 	explanation_map = get_explanation_map(problem_num)
+	explanation_map_r = get_explanation_map_r(problem_num)
 
 	# explanations from train data (3-D data)
 	explanation_set = get_explanation_data()
-	print(explanation_set)
+	#print(explanation_set)
+
 
 	#make trajectories
 	trajectories = []
@@ -223,8 +237,7 @@ def main():
 			
 		trajectories += [trajectory]
 
-	print(trajectories)
-	
+	#print(trajectories)
 
 	# call IRL Function ( reward-----> R(s, s') )
 	n_iters = 1000
@@ -235,9 +248,12 @@ def main():
 
 	#transition function
 	transition_matrix = get_transition_function(num_actions)
+	#print(transition_matrix)
 
 	#get feature mattrix
-	feature_matrix =  get_feature_matrix(num_features, num_states, num_actions)
+	feature_matrix =  get_feature_matrix(num_features, num_states, num_actions, explanation_map_r)
+	print(feature_matrix)
+	jvuy
 
 	feature_matrix = feature_matrix.reshape((num_features, num_states*num_states))
 
