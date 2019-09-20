@@ -24,7 +24,11 @@
 (have_ten_minutes_for_dress ?j - John)
 (have_twenty_minutes_for_meeting ?j - John)
 (meeting_happened ?j - John)
-(has_normal_meeting ?j - John)
+(dressed_for_normal_meeting ?j - John)
+(has_restaurant ?r - loc)
+(meeting_available ?r - loc)
+(food_at_home ?j - John)
+(has_coffee ?r - loc)
 )
 
 (:action make_instant_coffee
@@ -36,10 +40,18 @@
 )
 
 (:action coffee_near_home
-:parameters (?j - John )
-:precondition (and (have_ten_minutes_for_coffee ?j) (not_have_coffee_beans ?j)
+:parameters (?j - John ?r - loc)
+:precondition (and (have_ten_minutes_for_coffee ?j) (not_have_coffee_beans ?j) (has_coffee ?r) (at ?r)
 	    )
 :effect (and (coffee_ready ?j) (not (have_ten_minutes_for_coffee ?j))
+		)
+)
+
+(:action drinks_coffee
+:parameters (?j - John ?r - loc)
+:precondition (and (have_five_minutes_for_coffee ?j) (has_coffee ?r) (at ?r)
+	    )
+:effect (and (coffee_ready ?j) (not (have_five_minutes_for_coffee ?j))
 		)
 )
 
@@ -53,29 +65,35 @@
 
 (:action eats_small_breakfast
 :parameters (?j - John )
-:precondition (and (have_five_minutes_for_breakfast ?j)
+:precondition (and (have_five_minutes_for_breakfast ?j) (food_at_home ?j)
 	    )
 :effect (and (breakfast_ready ?j) (not (have_five_minutes_for_breakfast ?j))
 		)
 )
 
-(:action eats_small_breakfast_near_home
-:parameters (?j - John )
-:precondition (and (have_ten_minutes_for_breakfast ?j)
+(:action eats_breakfast_coffee
+:parameters (?j - John ?r - loc)
+:precondition (and (have_ten_minutes_for_breakfast ?j) (has_restaurant ?r) (at ?r)
 	    )
-:effect (and (breakfast_ready ?j) (not (have_ten_minutes_for_breakfast ?j))
+:effect (and (breakfast_ready ?j) (coffee_ready ?j) (not (have_ten_minutes_for_breakfast ?j)) 
 		)
 )
 
+(:action eats_breakfast
+:parameters (?j - John ?r - loc)
+:precondition (and (have_five_minutes_for_breakfast ?j) (has_restaurant ?r) (at ?r)
+	    )
+:effect (and (breakfast_ready ?j) (not (have_ten_minutes_for_breakfast ?j)) 
+		)
+)
 
 (:action eats_large_breakfast
 :parameters (?j - John )
-:precondition (and (have_twenty_minutes_for_breakfast ?j)
+:precondition (and (have_twenty_minutes_for_breakfast ?j) (food_at_home ?j)
 	    )
 :effect (and (breakfast_ready ?j) (not (have_twenty_minutes_for_breakfast ?j))
 		)
 )
-
 
 (:action dress_formally
 :parameters (?j - John )
@@ -89,10 +107,9 @@
 :parameters (?j - John )
 :precondition (and (have_ten_minutes_for_dress ?j)
 	    )
-:effect (and (not (have_ten_minutes_for_dress ?j))
+:effect (and (not (have_ten_minutes_for_dress ?j)) (dressed_for_normal_meeting ?j)
 		)
 )
-
 
 (:action packs_lunch
 :parameters (?j - John )
@@ -111,24 +128,16 @@
 )
 
 (:action has_formal_meeting
-:parameters (?j - John )
-:precondition (and (have_twenty_minutes_for_meeting ?j) (dressed_for_formal_meeting ?j)
+:parameters (?j - John ?r - loc )
+:precondition (and (have_twenty_minutes_for_meeting ?j) (dressed_for_formal_meeting ?j) (meeting_available ?r) (at ?r)
 	    )
 :effect (and (meeting_happened ?j) (not (have_twenty_minutes_for_meeting ?j))
 		)
 )
 
 (:action has_meeting
-:parameters (?j - John )
-:precondition (and (have_twenty_minutes_for_meeting ?j) (has_normal_meeting ?j)
-	    )
-:effect (and (meeting_happened ?j) (not (have_twenty_minutes_for_meeting ?j))
-		)
-)
-
-(:action has_remote_meeting
-:parameters (?j - John ?h - loc)
-:precondition (and (have_twenty_minutes_for_meeting ?j) (at ?h)
+:parameters (?j - John ?r - loc)
+:precondition (and (have_twenty_minutes_for_meeting ?j) (dressed_for_normal_meeting ?j) (meeting_available ?r) (at ?r)
 	    )
 :effect (and (meeting_happened ?j) (not (have_twenty_minutes_for_meeting ?j))
 		)
