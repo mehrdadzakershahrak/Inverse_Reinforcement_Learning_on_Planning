@@ -54,7 +54,7 @@
 
 (:action open_basement
 :parameters (?room - roomOne) 
-:precondition (and (at ?room)  
+:precondition (and (at ?room)  (has_accesskey)
 	    )
 :effect (and (basement_open)
 		)
@@ -111,7 +111,7 @@
 
 (:action open_roomTwo_window
 :parameters (?room - roomTwo) 
-:precondition (and (at ?room)   
+:precondition (and (at ?room) (no_fire)  
 	    )
 :effect (and (hallway_open)
 		)
@@ -119,7 +119,7 @@
 
 (:action open_roomTwo_door
 :parameters (?room - roomTwo) 
-:precondition (and (at ?room)  
+:precondition (and (at ?room) (door_unjammed) (no_fire)
 	    )
 :effect (and (hallway_open)
 		)
@@ -135,7 +135,7 @@
 
 (:action use_Key
 :parameters (?room - roomThree) 
-:precondition (and (at ?room) (has_Key)
+:precondition (and (at ?room) (has_key)
 	    )
 :effect (and (activate_elecDoor)
 		)
@@ -159,7 +159,7 @@
 
 (:action use_electric_door
 :parameters (?room - roomThree) 
-:precondition (and (at ?room)  
+:precondition (and (at ?room) (has_electricity)  
 	    )
 :effect (and (electricDoor_open)
 		)

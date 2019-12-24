@@ -2,7 +2,7 @@ import numpy as np
 import pprint
 import re
 import os
-
+from feature_functions import laven_dist,plan_distance
 #lines[l] = re.sub(r"\$\w+",'',lines[l])
 
 def store_traces(trace_files):
@@ -28,7 +28,7 @@ def store_traces(trace_files):
                 
 def render_template(sc,D):
     '''
-    This function renders the domain and problem file from substitutions corresponding to dictionary
+    This function renders the domain (scavenger_edited.pddl) and problem file(pi.pddl) from substitutions corresponding to dictionary
     input: scenario file number, dictionary of substitutions
     '''
     global PROBLEM_ROOT_PATH
@@ -64,8 +64,7 @@ def render_template(sc,D):
         problem_template.close()
 
     except IOError:
-        print("Problem template file doesn't exist")
-
+        print("Problem template file doesn't exist")    
 
 def calculate_states():
     '''
@@ -108,15 +107,47 @@ def run_planner(problem_number,idx):
     plan_cost = proc_plan[cost[0]].split(' ')[-1]
     return plan, plan_cost
 
+def explanation_to_dict(subs_dict,explanation):
+    '''
+    input: dictionary to substitute values of keys corresponding to explanation and explanation itself
+    output: substituted dictionary
+    '''
+    for word in explanation:
+        subs_dict['$'+str.upper(word)] = '('+str.lower(word)+')'
+    return subs_dict
+
+def calculate_features(plan1,plan2,explanation):
+    '''
+    input: 2 plans and an explanation
+    output: feature vectors corresponding to the inputs
+   
+    calculate_lavenstein_distance
+    calculate_plan_cost
+    calculate_plan_distance
+    calculate_domain_dependent_features based on explanation
+    return all values in an array  
+    '''
+    lav_dist = laven_dist(plan1,plan2)
+    plan_dist = plan_distance(plan1,plan2)
+    print("lav_dist" +str(lav_dist))
+    print("plan_dist" +str(plan_dist))
+    return lav_dist
+
+
 
 
 if __name__ == "__main__":
-    TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/Train/'
-    PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/Archive/'
+    TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
+    PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
 
     #trace_files = ['p1.txt','p2.txt','p3.txt','p4.txt']      
-    trace_files = ['p1.txt']
+    trace_files = ['p1.txt','p2.txt','p3.txt']
+    scenarios = []
+    [scenarios.append(int(t)) for t in re.findall(r'\d+',str(trace_files))]
+
+    feat_map = {}
+
     num_scenarios = len(trace_files)
     for i in range(len(trace_files)):
         trace_files[i] = TRACE_ROOT_PATH+trace_files[i]
@@ -142,16 +173,29 @@ if __name__ == "__main__":
             unique_words.update(word)
 
     subs_dict = dict.fromkeys(unique_words,'')
-    print subs_dict
-
-    for i in range(num_scenarios):   
-        '''
-        create the initial domain file by removing the predicates with $ sign
-        generate the plan corresponding to the domain and problem file
-        generate features corresponding to the original plan
-        use exaplanation to generate new plan
-        generate features of new plan
-        '''
-        render_template(i,subs_dict)
-        plan,plan_cost = run_planner(1,0)
-        print plan 
+    #print subs_dict
+    #pp.pprint(traces)
+    
+    for i in scenarios:   
+        
+        #create the initial domain file by removing the predicates with $ sign
+        #generate the plan corresponding to the domain and problem file
+        #generate features corresponding to the original plan
+        #use exaplanation to generate new plan
+        #generate features of new plan
+        
+        for j in range(len(traces[i])):
+            render_template(i,subs_dict)
+            plan_old,plan_old_cost = run_planner(i,0)
+            print("old_plan : " +str(plan_old))
+            features_old = calculate_features(plan_old,plan_old,'')
+            explanation = traces[i][j]
+            pp.pprint(explanation)
+            expl_dict = explanation_to_dict(subs_dict,explanation)
+            #pp.pprint(expl_dict)
+            render_template(i,expl_dict)
+            new_plan,new_plan_cost = run_planner(i,0)
+            print("new_plan : " +str(new_plan))
+            features_new = calculate_features(new_plan,plan_old,'')
+            raw_input()
+            

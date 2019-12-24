@@ -1,4 +1,4 @@
-(define (problem p1) (:domain scavenger)
+(define (problem p3) (:domain scavenger)
 (:objects
 	start - roomZero
     basement - roomOne
@@ -13,9 +13,9 @@
 (at start)
 
 ; Situation variables
-$(has_accesskey)
-$(fire)
-$(need_electric)
+
+(fire)
+(has_electricity)
 
 
 )
