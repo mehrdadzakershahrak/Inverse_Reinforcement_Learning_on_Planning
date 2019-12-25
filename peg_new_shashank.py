@@ -27,6 +27,7 @@ def store_traces(trace_files):
                 trace.append(line.rstrip())
                 
 def render_template(sc,D):
+
     '''
     This function renders the domain (scavenger_edited.pddl) and problem file(pi.pddl) from substitutions corresponding to dictionary
     input: scenario file number, dictionary of substitutions
@@ -78,7 +79,12 @@ def calculate_states():
     S = {}
     R = {}
     n = 0
-    for i in range(len(traces)):
+    for i in range(len(traces)): #for each scenario
+        s = str(i) + '_'
+        if s not in S:
+            S[s] = n      
+            R[n] = s
+            n += 1 
         for trace in traces[i]: #new expert demo
             s = str(i) + '_'    #s is (4_,password),(4_,password,get_key) and so on
             for word in trace:
@@ -97,26 +103,18 @@ def run_planner(problem_number,idx):
     '''
     global PLANNER_RELATIVE_PATH
     cmd = '.'+PLANNER_RELATIVE_PATH+'fast-downward.py --sas-file temp_'+ str(idx) +'.sas --plan-file plan_'+ str(idx) +' '+'Archive/scavenger_edited.pddl'+' '+'Archive/'+'p'+str(problem_number)+'.pddl'+' --search "astar(lmcut())"'
-    print cmd
+    #print cmd
     plan = os.popen(cmd).read()
     proc_plan = plan.split('\n')
     cost = [i for i, s in enumerate(proc_plan) if 'Plan cost:' in s]
     if 'Solution found!' not in proc_plan:
         return [], 0
     plan = proc_plan[proc_plan.index('Solution found!')+2: cost[0]-1]
-    plan_cost = proc_plan[cost[0]].split(' ')[-1]
+    plan_cost = float(proc_plan[cost[0]].split(' ')[-1])
     return plan, plan_cost
 
-def explanation_to_dict(subs_dict,explanation):
-    '''
-    input: dictionary to substitute values of keys corresponding to explanation and explanation itself
-    output: substituted dictionary
-    '''
-    for word in explanation:
-        subs_dict['$'+str.upper(word)] = '('+str.lower(word)+')'
-    return subs_dict
 
-def calculate_features(plan1,plan2,explanation):
+def calculate_features(plan1,plan2,plan1_cost,plan2_cost):
     '''
     input: 2 plans and an explanation
     output: feature vectors corresponding to the inputs
@@ -129,11 +127,8 @@ def calculate_features(plan1,plan2,explanation):
     '''
     lav_dist = laven_dist(plan1,plan2)
     plan_dist = plan_distance(plan1,plan2)
-    print("lav_dist" +str(lav_dist))
-    print("plan_dist" +str(plan_dist))
-    return lav_dist
-
-
+    
+    return [lav_dist,plan_dist,abs(plan1_cost-plan2_cost)]
 
 
 if __name__ == "__main__":
@@ -162,6 +157,7 @@ if __name__ == "__main__":
     A = len(unique_words)
     #pp.pprint(unique_words)
     P = np.zeros([N,N,A])
+    traj = []
     
     domain_template = open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl','r')
     lines = domain_template.readlines()
@@ -176,7 +172,7 @@ if __name__ == "__main__":
     #print subs_dict
     #pp.pprint(traces)
     
-    for i in scenarios:   
+    for i in range(num_scenarios):  #for each scenario 
         
         #create the initial domain file by removing the predicates with $ sign
         #generate the plan corresponding to the domain and problem file
@@ -184,18 +180,60 @@ if __name__ == "__main__":
         #use exaplanation to generate new plan
         #generate features of new plan
         
-        for j in range(len(traces[i])):
-            render_template(i,subs_dict)
-            plan_old,plan_old_cost = run_planner(i,0)
-            print("old_plan : " +str(plan_old))
-            features_old = calculate_features(plan_old,plan_old,'')
-            explanation = traces[i][j]
-            pp.pprint(explanation)
-            expl_dict = explanation_to_dict(subs_dict,explanation)
-            #pp.pprint(expl_dict)
-            render_template(i,expl_dict)
-            new_plan,new_plan_cost = run_planner(i,0)
-            print("new_plan : " +str(new_plan))
-            features_new = calculate_features(new_plan,plan_old,'')
-            raw_input()
-            
+        for trace in traces[i]: #each expert explanation, trace:[exp1,exp2,...]
+            s = str(i)+'_'
+            subs_dict = dict.fromkeys(unique_words,'')                     #initialize empty dict
+            render_template(i,subs_dict)                                   #render initial empty dict
+            plan_old,plan_old_cost = run_planner(i,0)                      # calculate plan
+            print("old_plan : " +str(plan_old))     
+            features= calculate_features(plan_old,plan_old,plan_old_cost,plan_old_cost) #calculate faetures for initial plan (all should be )
+            if s not in feat_map:
+                feat_map[S[s]] = features                                  #update feat_map
+            expl_dict = subs_dict                           
+        
+            for word in trace:
+                expl_dict['$'+str.upper(word)]='('+str.lower(word)+')'    # update dict
+                render_template(i,expl_dict)                              # render new template
+                plan_new,plan_new_cost = run_planner(i,0)                 # get new plan
+                s_old = s
+                s+=','+word
+                if s not in feat_map:
+                    features = calculate_features(plan_old,plan_new,plan_old_cost,plan_new_cost)
+                    feat_map[S[s]] = features
+                #P[S[s_old],S[s],word]=1
+                traj.append((S[s_old],S[s],word))
+                plan_old = plan_new
+                plan_old_cost = plan_new_cost
+    input()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     
