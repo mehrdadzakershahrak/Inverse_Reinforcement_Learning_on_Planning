@@ -2,6 +2,7 @@ import numpy as np
 import pprint
 import re
 import os
+from itertools import chain, combinations
 from feature_functions import laven_dist,plan_distance
 #lines[l] = re.sub(r"\$\w+",'',lines[l])
 
@@ -96,6 +97,42 @@ def calculate_states():
 
     return S, R                 # S now contains mapping from explanation (history format) to number (like id) and R now contains mapping from number (like id) to explanation (history-format)
 
+
+def get_transition_matrix():
+    global unique_words
+    unique_explanations = []
+    num_actions = len(unique_words)
+    '''
+    Each unique explanation is associated with the number which is its index in the unique_words tuple
+    '''
+    states_dict = get_state_map(num_actions)    # each state is a unique number associated with which all explanations have bdone till then
+    transition_matrix = np.zeros((2 ** num_actions, num_actions, 2 ** num_actions))
+    for i in states_dict.keys():          #for each state,
+        for a in list(set(range(num_actions))-set(i)):  #for each explanation not yet done..
+                try:
+                    new_state = list(i)
+                    new_state.append(a)
+                    transition_matrix[states_dict[i], a, states_dict[tuple(sorted(new_state))]]=1 #update transition matrix
+                except KeyError:
+                    print(new_state)
+                    input()
+
+    return transition_matrix
+
+
+def powerset(iterable):
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+
+def get_state_map(num_actions):
+	states = list(powerset(range(num_actions)))
+	states_dict = {}
+	for i in range(len(states)):
+		#states_dict[i] = list(states[i])
+		states_dict[states[i]] = i
+	return states_dict
+
+
 def run_planner(problem_number,idx):
     '''
     input: self explanatory
@@ -130,7 +167,6 @@ def calculate_features(plan1,plan2,plan1_cost,plan2_cost):
     
     return [lav_dist,plan_dist,abs(plan1_cost-plan2_cost)]
 
-
 if __name__ == "__main__":
     TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
     PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
@@ -156,7 +192,6 @@ if __name__ == "__main__":
     N = len(S)
     A = len(unique_words)
     #pp.pprint(unique_words)
-    P = np.zeros([N,N,A])
     traj = []
     
     domain_template = open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl','r')
@@ -168,6 +203,8 @@ if __name__ == "__main__":
             word = re.findall(r"\$\w+",line)
             unique_words.update(word)
 
+
+    P_a = get_transition_matrix()
     subs_dict = dict.fromkeys(unique_words,'')
     #print subs_dict
     #pp.pprint(traces)
@@ -186,7 +223,7 @@ if __name__ == "__main__":
             render_template(i,subs_dict)                                   #render initial empty dict
             plan_old,plan_old_cost = run_planner(i,0)                      # calculate plan
             print("old_plan : " +str(plan_old))     
-            features= calculate_features(plan_old,plan_old,plan_old_cost,plan_old_cost) #calculate faetures for initial plan (all should be )
+            features= calculate_features(plan_old,plan_old,plan_old_cost,plan_old_cost) #calculate features for initial plan (all should be )
             if s not in feat_map:
                 feat_map[S[s]] = features                                  #update feat_map
             expl_dict = subs_dict                           
@@ -200,10 +237,12 @@ if __name__ == "__main__":
                 if s not in feat_map:
                     features = calculate_features(plan_old,plan_new,plan_old_cost,plan_new_cost)
                     feat_map[S[s]] = features
-                #P[S[s_old],S[s],word]=1
+                #   P[S[s_old],S[s],word]=1
                 traj.append((S[s_old],S[s],word))
                 plan_old = plan_new
                 plan_old_cost = plan_new_cost
+   
+
     input()
 
 
