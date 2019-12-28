@@ -1,19 +1,18 @@
-(define (problem p1) (:domain scavenger)
+(define (problem p2) (:domain scavenger)
 (:objects
-	basement - roomOne
+	start - roomZero
+    basement - roomOne
     hallway - roomTwo
     elecDoor - roomThree
 )
 
 (:init
-(opens basement hallway)
-(opens hallway elecDoor)
-(at basement)
-
-(basement_open basement)
-(hallway_open hallway)
-(electricDoor_open elecDoor)
-
+(can_go start basement)
+(can_go basement hallway)
+(can_go hallway elecDoor)
+(at start)
+(has_electricity)
+(fire)
 
 )
 

@@ -4,7 +4,7 @@ end_version
 begin_metric
 0
 end_metric
-11
+12
 begin_variable
 var0
 -1
@@ -44,18 +44,25 @@ begin_variable
 var5
 -1
 2
+Atom has_hammer()
+NegatedAtom has_hammer()
+end_variable
+begin_variable
+var6
+-1
+2
 Atom basement_open()
 NegatedAtom basement_open()
 end_variable
 begin_variable
-var6
+var7
 -1
 2
 Atom no_fire()
 NegatedAtom no_fire()
 end_variable
 begin_variable
-var7
+var8
 -1
 4
 Atom at(basement)
@@ -64,21 +71,21 @@ Atom at(hallway)
 Atom at(start)
 end_variable
 begin_variable
-var8
+var9
 -1
 2
 Atom hallway_open()
 NegatedAtom hallway_open()
 end_variable
 begin_variable
-var9
+var10
 -1
 2
 Atom electricdoor_open()
 NegatedAtom electricdoor_open()
 end_variable
 begin_variable
-var10
+var11
 -1
 2
 Atom exit(elecdoor)
@@ -93,6 +100,7 @@ begin_state
 1
 1
 1
+1
 3
 1
 1
@@ -100,13 +108,13 @@ begin_state
 end_state
 begin_goal
 1
-10 0
+11 0
 end_goal
-13
+14
 begin_operator
 access_computer basement
 1
-7 0
+8 0
 1
 0 2 -1 0
 1
@@ -114,7 +122,7 @@ end_operator
 begin_operator
 break_with_stone hallway
 1
-7 2
+8 2
 1
 0 0 -1 0
 1
@@ -122,7 +130,7 @@ end_operator
 begin_operator
 get_accesskey basement
 1
-7 0
+8 0
 1
 0 1 -1 0
 1
@@ -130,35 +138,44 @@ end_operator
 begin_operator
 get_fireext hallway
 2
-7 2
+8 2
 0 0
 1
 0 4 -1 0
 1
 end_operator
 begin_operator
+get_hammer hallway
+2
+8 2
+0 0
+1
+0 5 -1 0
+1
+end_operator
+begin_operator
 get_out elecdoor
 2
-7 1
-9 0
+8 1
+10 0
 1
-0 10 -1 0
+0 11 -1 0
 1
 end_operator
 begin_operator
 goes_one_two basement hallway
 1
-5 0
+6 0
 1
-0 7 0 2
+0 8 0 2
 1
 end_operator
 begin_operator
 goes_two_three hallway elecdoor
 1
-8 0
+9 0
 1
-0 7 2 1
+0 8 2 1
 1
 end_operator
 begin_operator
@@ -166,32 +183,33 @@ goes_zero_one start basement
 1
 3 0
 1
-0 7 3 0
+0 8 3 0
 1
 end_operator
 begin_operator
 open_basement basement
 3
-7 0
+8 0
 1 0
 2 0
 1
-0 5 -1 0
+0 6 -1 0
 1
 end_operator
 begin_operator
 open_roomtwo_window hallway
-2
-7 2
-6 0
+3
+8 2
+5 0
+7 0
 1
-0 8 -1 0
+0 9 -1 0
 1
 end_operator
 begin_operator
 pick_lock start
 1
-7 3
+8 3
 1
 0 3 -1 0
 1
@@ -199,18 +217,18 @@ end_operator
 begin_operator
 putout_fire hallway
 2
-7 2
+8 2
 4 0
 1
-0 6 -1 0
+0 7 -1 0
 1
 end_operator
 begin_operator
 use_electric_door elecdoor
 1
-7 1
+8 1
 1
-0 9 -1 0
+0 10 -1 0
 1
 end_operator
 0
