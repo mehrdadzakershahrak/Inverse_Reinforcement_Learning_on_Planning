@@ -6,23 +6,33 @@ from itertools import chain, combinations
 from feature_functions import laven_dist,plan_distance
 #lines[l] = re.sub(r"\$\w+",'',lines[l])
 
-def store_traces(trace_files):
+
+def store_traces(trace_files,scenario_wise = False):
     '''
     input: tuple containing full path of demonstration files(Explanations)
-    This function parses the explanation files and stores in the global tuple traces
+    This function parses the explanation files and stores in the global tuple traces in the order of scenarios
     '''
-    global traces,ROOT_PATH
-    traces = {}
+    global traces,TRACE_ROOT_PATH
+    if scenario_wise:
+        traces = {}
+    else:
+        traces = []
+
     num_scenarios = len(trace_files)
+
     for i in range(num_scenarios):
         scenario_file = open(trace_files[i],'r')
         lines = scenario_file.readlines()
         scenario_file.close()
         trace = []
-        traces[i]=[]
+        if scenario_wise:
+            traces[i]=[]
         for line in lines:
             if line[0]=='-':
-                traces[i].append(trace)
+                if scenario_wise:
+                    traces[i].append(trace)
+                else:
+                    traces.append(trace)
                 trace = []
             else:
                 trace.append(line.rstrip())
@@ -63,7 +73,7 @@ def render_domain_template(D):
     domain_template = open(PROBLEM_ROOT_PATH+'scavenger_edited.pddl','w')
     domain_template.write(''.join(domain))
     domain_template.close()
-    #print("Editted domain file")
+
 
 def calculate_states():
     '''
@@ -199,7 +209,6 @@ def get_plan(problem_number,state):
     '''
     return plan,plan_cost
 
-
 def get_feat_map_from_states(num_features):
     '''
     This function calculates the features corresponding to the states containined in states_dict
@@ -224,6 +233,21 @@ def get_feat_map_from_states(num_features):
 
     return features
 
+def get_trajectories_from_traces():
+    '''
+    This funciton converts expert demos into state-action-trajectories of the shape: TXLx2 where T is the number of trajectories, L is the length of each trajectory
+    and each item is a state-action (int) pair
+    '''
+    global traces,states_dict,actions,reverse_states_dict
+    trajectories = np.zeros([len(traces),len(traces[0]),2])
+    for i in range(len(traces)):
+        state = [] #initial state, no explanations given
+        for j in range(len(traces[i])):
+            action = unique_words.index('$'+str.upper(traces[i][j]))
+            trajectories[i,j,0] = states_dict[tuple(state)]
+            state.append(action)
+            trajectories[i, j, 1] =  states_dict[tuple(state)]
+    return trajectories
 
 if __name__ == "__main__":
     TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
@@ -236,10 +260,9 @@ if __name__ == "__main__":
 
 
     #trace_files = ['p1.txt','p2.txt','p3.txt','p4.txt']      
-    trace_files = ['p1.txt','p2.txt','p3.txt']
+    trace_files = ['p2.txt']
     scenarios = []
     [scenarios.append(int(t)) for t in re.findall(r'\d+',str(trace_files))]
-
     num_scenarios = len(trace_files)
     for i in range(len(trace_files)):
         trace_files[i] = TRACE_ROOT_PATH+trace_files[i]
@@ -249,25 +272,15 @@ if __name__ == "__main__":
 
 
     unique_words = get_actions()
+
+
     actions = range(len(unique_words)) #In this case, we use action indices as the actions itself instead of the explicit action names
     A = len(actions)
     states_dict,reverse_states_dict = get_state_map(A)
-    traj = []
     P_a = get_transition_matrix()
-    #subs_dict = dict.fromkeys(unique_words,'')
-    #print subs_dict
-    #pp.pprint(traces)
     num_features = 3
-
-    # plan1, plan1_cost = get_plan(0, 511)
-    # print("----")
-    # plan2, plan2_cost = get_plan(0, 0)
-    #
-    # print(calculate_features(plan1, plan2, plan1_cost, plan2_cost))
-
-
-    feat_map = get_feat_map_from_states(num_features)
-    np.save('feat_map.npy',feat_map)
+    #feat_map = get_feat_map_from_states(num_features)
+    trajectories = get_trajectories_from_traces()
     print("Done")
 
 
