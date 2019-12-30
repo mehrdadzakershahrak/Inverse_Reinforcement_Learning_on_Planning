@@ -13,9 +13,9 @@
 (at start)
 
 ; Situation variables
-(has_ladder)
-(fire)
-(need_electric)
+$(has_ladder)
+$(fire)
+$(need_electric)
 
 
 )

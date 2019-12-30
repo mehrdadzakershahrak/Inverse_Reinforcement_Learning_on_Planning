@@ -1,4 +1,3 @@
-pick_lock
 has_key
 has_password
 has_accesskey
@@ -6,7 +5,6 @@ no_fire
 door_unjammed
 has_electricity
 -----------------
-pick_lock
 has_key
 has_password
 has_accesskey
@@ -14,7 +12,6 @@ no_fire
 door_unjammed
 has_electricity
 -----------------
-pick_lock
 has_key
 has_password
 has_accesskey

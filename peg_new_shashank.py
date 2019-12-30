@@ -1,9 +1,14 @@
+
 import numpy as np
 import pprint
 import re
 import os
 from itertools import chain, combinations
 from feature_functions import laven_dist,plan_distance
+import pickle
+from new_maxent_irl import maxent_irl
+from os import path
+import copy
 #lines[l] = re.sub(r"\$\w+",'',lines[l])
 
 
@@ -74,7 +79,6 @@ def render_domain_template(D):
     domain_template.write(''.join(domain))
     domain_template.close()
 
-
 def calculate_states():
     '''
     output:
@@ -106,12 +110,12 @@ def calculate_states():
 
     return S, R                 # S now contains mapping from explanation (history format) to number (like id) and R now contains mapping from number (like id) to explanation (history-format)
 
-def get_actions():
+def get_actions(domain_file_lines):
     '''
     This function reads the domain template file and records all predicates with '$' which are the possible explanations/actions in the MDP
     :return: action_set
     '''
-    global PROBLEM_ROOT_PATH,domain_file_lines
+    global PROBLEM_ROOT_PATH
     lines = list(domain_file_lines)
     domain_template.close()
     unique_words = set()
@@ -161,8 +165,8 @@ def run_planner(problem_number,idx):
     input: self explanatory
     output: plan obtained by running planner on input files
     '''
-    global PLANNER_RELATIVE_PATH
-    cmd = '.'+PLANNER_RELATIVE_PATH+'fast-downward.py --sas-file temp_'+ str(idx) +'.sas --plan-file plan_'+ str(idx) +' '+'Archive/scavenger_edited.pddl'+' '+'Archive/'+'p'+str(2)+'.pddl'+' --search "astar(lmcut())"'
+    global PLANNER_RELATIVE_PATH,problem_file_used
+    cmd = '.'+PLANNER_RELATIVE_PATH+'fast-downward.py --sas-file temp_'+ str(idx) +'.sas --plan-file plan_'+ str(idx) +' '+'Archive/scavenger_edited.pddl'+' '+'Archive/'+'p'+str(problem_file_used)+'_edited.pddl'+' --search "astar(lmcut())"'
     #print(cmd)
     plan = os.popen(cmd).read()
     proc_plan = plan.split('\n')
@@ -187,7 +191,6 @@ def calculate_features(plan1,plan2,plan1_cost,plan2_cost):
     '''
     lav_dist = laven_dist(plan1,plan2)
     plan_dist = plan_distance(plan1,plan2)
-    
     return [lav_dist,plan_dist,abs(plan1_cost-plan2_cost)]
 
 def get_plan(problem_number,state):
@@ -222,15 +225,14 @@ def get_feat_map_from_states(num_features):
     features = np.zeros([N,N,num_features])
     for state in states_dict.values(): #states are unique numbers associated with each state here.
         plan,plan_cost = get_plan(0,state)
-        features[state,state] = calculate_features(plan,plan,plan_cost,plan_cost)
+        features[state,state] = [0.0,0.0,0.0] #calculate_features(plan,plan,plan_cost,plan_cost)
         for next_state in states_dict.values():
             if any(P_a[state,:,next_state])==1:
                 new_plan,new_plan_cost = get_plan(0,next_state)
                 f = calculate_features(plan,new_plan,plan_cost,new_plan_cost)
-                if f!=[0.0,0.0,0.0]:
-                    print("Not Zero")
+                #if f==[0.0,0.0,0.0]:
+                #   print("Zero")
                 features[state,next_state] = f
-
     return features
 
 def get_trajectories_from_traces():
@@ -244,23 +246,73 @@ def get_trajectories_from_traces():
         state = [] #initial state, no explanations given
         for j in range(len(traces[i])):
             action = unique_words.index('$'+str.upper(traces[i][j]))
-            trajectories[i,j,0] = states_dict[tuple(state)]
+            try:
+                trajectories[i,j,0] = states_dict[tuple(state)]
+            except KeyError:
+                print([i,j])
+
             state.append(action)
-            trajectories[i, j, 1] =  states_dict[tuple(state)]
+            try:
+                trajectories[i, j, 1] =  states_dict[tuple(state)]
+            except KeyError:
+                print([i,j])
     return trajectories
+
+def update_domain_template_and_problem_file(problem_file_used):
+    '''
+    This function updates the domain.tpl.pddl file by replacing $terms which are already present in initial state as defined in the problem file
+    '''
+    global PROBLEM_ROOT_PATH,domain_file_lines,unique_words
+    domain = list(domain_file_lines)
+    problem_file = open(PROBLEM_ROOT_PATH+"p"+str(problem_file_used)+".pddl",'r')
+    problem = problem_file.readlines()
+    problem_file.close()
+    situation_variables = []
+    
+    for i in range(len(problem)): #find all situation variables in problem file
+        if '$' in problem[i]:
+            [situation_variables.append(str.upper(s.replace('(','').replace(')',''))) for s in re.findall(r'\$\(\w+\)+',problem[i])]
+            problem[i]=problem[i].replace('$','')  #remove $ in problem file
+
+    #pp.pprint(situation_variables)
+    common = list(set(unique_words).intersection(set(situation_variables))) #Situation variables which are also explanations
+    print("Common predicates: "+str(common))
+    domain_subs_dict = dict.fromkeys(unique_words,'') 
+    
+
+    problem_file = open(PROBLEM_ROOT_PATH+"p"+str(problem_file_used)+"_edited.pddl",'w')
+    problem_file.write(''.join(problem))
+    problem_file.close()
+    
+    subs_dict=dict.fromkeys(unique_words,'')
+    for s in subs_dict.keys():
+        if s in common:
+            subs_dict[s] = '('+str.lower(s[1:])+')' 
+        else:
+            subs_dict[s] = s
+
+    for i in range(len(domain)):
+        if '$' in domain[i]:
+            for word in subs_dict.keys():  #replace all occurences of dictionary keys with corresponding values
+                domain[i]=domain[i].replace(word,subs_dict[word])
+    
+    domain_template = open(PROBLEM_ROOT_PATH+'scavenger_edited.tpl.pddl','w')
+    domain_template.write(''.join(domain))
+    domain_template.close()
+    unique_words = get_actions(domain)
+    print("Updated domain template and problem file")
+    pp.pprint(unique_words)
+    return domain,unique_words
 
 if __name__ == "__main__":
     TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
     PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
+    problem_file_used = 2
 
-    domain_template = open(PROBLEM_ROOT_PATH + 'scavenger.tpl.pddl', 'r')
-    domain_file_lines = domain_template.readlines()
-    domain_template.close()
-
-
+    ##############STORE TRACES##########################
     #trace_files = ['p1.txt','p2.txt','p3.txt','p4.txt']      
-    trace_files = ['p2.txt']
+    trace_files = ['p1.txt','p2.txt','p3.txt','p4.txt','p5.txt','p6.txt','p7.txt','p8.txt']
     scenarios = []
     [scenarios.append(int(t)) for t in re.findall(r'\d+',str(trace_files))]
     num_scenarios = len(trace_files)
@@ -270,24 +322,55 @@ if __name__ == "__main__":
     store_traces(trace_files)
     pp = pprint.PrettyPrinter(indent=4)
 
+    ######################################################
 
-    unique_words = get_actions()
+    
 
+    for i in range(1,3):  #Verify that features are same irrespective of problem file used for generating features
+        domain_template = open(PROBLEM_ROOT_PATH + 'scavenger.tpl.pddl', 'r')
+        domain_file_lines = domain_template.readlines()
+        domain_template.close()  
+        unique_words = get_actions(domain_file_lines)
+        
+        problem_file_used = i
+        domain_file_lines,unique_words = update_domain_template_and_problem_file(problem_file_used)
 
-    actions = range(len(unique_words)) #In this case, we use action indices as the actions itself instead of the explicit action names
-    A = len(actions)
-    states_dict,reverse_states_dict = get_state_map(A)
-    P_a = get_transition_matrix()
-    num_features = 3
-    #feat_map = get_feat_map_from_states(num_features)
+        actions = range(len(unique_words)) #In this case, we use action indices as the actions itself instead of the explicit action names
+        A = len(actions)
+        states_dict,reverse_states_dict = get_state_map(A)
+        num_features = 3
+    
+        P_a = get_transition_matrix()
+        '''    
+        if path.exists('feat_map.npy'):
+            print("Found features map file")
+            feat_map = np.load('feat_map.npy')
+        else:
+            feat_map = get_feat_map_from_states(num_features)
+            np.save('feat_map.npy',feat_map)
+        '''
+        with open('states_dict'+str(i)+'.pickle', 'wb') as handle:
+            pickle.dump(states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        with open('reverse_states_dict.pickle', 'wb') as handle:
+            pickle.dump(reverse_states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        feat_map = get_feat_map_from_states(num_features)
+        np.save('feat_map_new'+str(i)+'.npy', feat_map)
+        print("saved "+str(i))
+        print("Done")
+
+    '''
     trajectories = get_trajectories_from_traces()
-    print("Done")
+    gamma = 0.9
+    lr = 0.08
+    n_iters = 10
 
-
-    input()
-
-
-
+    print("Done calculating feat_maps, running IRL")
+    rewards = maxent_irl(feat_map, P_a, gamma, trajectories, lr, n_iters)
+    print(rewards)
+    '''
+    
+    #input()
 
 
 
