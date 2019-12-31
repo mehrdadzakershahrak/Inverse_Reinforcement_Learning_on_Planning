@@ -54,7 +54,7 @@
 
 (:action open_basement
 :parameters (?room - roomOne) 
-:precondition (and (at ?room) $HAS_PASSWORD $HAS_ACCESSKEY
+:precondition (and (at ?room) $HAS_PASSWORD (has_accesskey)
 	    )
 :effect (and (basement_open)
 		)

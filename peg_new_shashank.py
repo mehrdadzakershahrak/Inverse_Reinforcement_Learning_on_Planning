@@ -1,4 +1,3 @@
-
 import numpy as np
 import pprint
 import re
@@ -9,9 +8,62 @@ import pickle
 from new_maxent_irl import maxent_irl
 from os import path
 import copy
-#lines[l] = re.sub(r"\$\w+",'',lines[l])
+
+############## NOT USED ##################
+
+def calculate_states_from_traces():
+    '''
+    input:
+        applicable_actions: (tuple) all the possible actions for the current problem file
+    output:
+        S : explanations(history format) -> number (id)
+        R : reverse mapping of S
+    This function uses the traces to generate history-type string-encoded explanations used for feature generation
 
 
+    '''
+    global traces
+    S = {}
+    R = {}
+    n = 0
+    for i in range(len(traces)): #for each scenario
+        s = str(i) + '_'
+        if s not in S:
+            S[s] = n
+            R[n] = s
+            n += 1
+        for trace in traces[i]: #new expert demo
+            s = str(i) + '_'    #s is (4_,password),(4_,password,get_key) and so on
+            for word in trace:
+                s += ','+word
+                if s not in S:
+                    S[s] = n
+                    R[n] = s
+                    n += 1
+
+
+
+    return S, R                 # S now contains mapping from explanation (history format) to number (like id) and R now contains mapping from number (like id) to explanation (history-format)
+
+def render_problem_template(sc,D):
+    try:
+        problem_template = open(PROBLEM_ROOT_PATH + 'p' + str(sc) + '.tpl.pddl', 'r')
+        problem = problem_template.readlines()
+        problem_template.close()
+
+        for j in range(len(problem)):
+            if '$' in problem[j]:
+                for word in D.keys():  # replace all occurences of dictionary keys with corresponding values
+                    problem[j].replace('$' + str.upper(word), D[word])
+
+        problem_template = open(PROBLEM_ROOT_PATH + 'p' + str(sc) + '_edited.pddl', 'w')
+        problem_template.write(''.join(problem))
+        problem_template.close()
+
+    except IOError:
+        print("Problem template file doesn't exist")
+
+##########################################
 def store_traces(trace_files,scenario_wise = False):
     '''
     input: tuple containing full path of demonstration files(Explanations)
@@ -42,24 +94,6 @@ def store_traces(trace_files,scenario_wise = False):
             else:
                 trace.append(line.rstrip())
 
-def render_problem_template(sc,D):
-    try:
-        problem_template = open(PROBLEM_ROOT_PATH + 'p' + str(sc) + '.tpl.pddl', 'r')
-        problem = problem_template.readlines()
-        problem_template.close()
-
-        for j in range(len(problem)):
-            if '$' in problem[j]:
-                for word in D.keys():  # replace all occurences of dictionary keys with corresponding values
-                    problem[j].replace('$' + str.upper(word), D[word])
-
-        problem_template = open(PROBLEM_ROOT_PATH + 'p' + str(sc) + '_edited.pddl', 'w')
-        problem_template.write(''.join(problem))
-        problem_template.close()
-
-    except IOError:
-        print("Problem template file doesn't exist")
-
 def render_domain_template(D):
     '''
     This function renders the domain (scavenger_edited.pddl) file from substitutions corresponding to dictionary
@@ -79,36 +113,26 @@ def render_domain_template(D):
     domain_template.write(''.join(domain))
     domain_template.close()
 
-def calculate_states():
+def get_actions(domain_file_lines,all_possible_actions): #overloaded function
     '''
-    output:
-        S : explanations(history format) -> number (id)
-        R : reverse mapping of S
-    This function uses the traces to generate history-type string-encoded explanations used for feature generation 
+    input: all_possible_actions: is the dict with every possible explanation enumerated
+    This function reads the domain template file and records all predicates with '$' which are the possible explanations/actions in the MDP
+    :return: action_set
     '''
-    global traces,unique_words
-    unique_words = []
-    S = {}
-    R = {}
-    n = 0
-    for i in range(len(traces)): #for each scenario
-        s = str(i) + '_'
-        if s not in S:
-            S[s] = n      
-            R[n] = s
-            n += 1 
-        for trace in traces[i]: #new expert demo
-            s = str(i) + '_'    #s is (4_,password),(4_,password,get_key) and so on
-            for word in trace:
-                s += ','+word
-                if s not in S:
-                    S[s] = n      
-                    R[n] = s
-                    n += 1 
+    lines = list(domain_file_lines)
+    unique_words = set()
+    for line in lines:
+        if '$' in line:
+            word = re.findall(r"\$\w+", line)
+            unique_words.update(word)
+
+    possible_actions = []
+    for word in unique_words:
+        if word in all_possible_actions.keys():
+            possible_actions.append(all_possible_actions[word])
+    return possible_actions
 
 
-
-    return S, R                 # S now contains mapping from explanation (history format) to number (like id) and R now contains mapping from number (like id) to explanation (history-format)
 
 def get_actions(domain_file_lines):
     '''
@@ -117,7 +141,6 @@ def get_actions(domain_file_lines):
     '''
     global PROBLEM_ROOT_PATH
     lines = list(domain_file_lines)
-    domain_template.close()
     unique_words = set()
     for line in lines:
         if '$' in line:
@@ -210,7 +233,7 @@ def get_plan(problem_number,state):
     if plan!=[]:
         print(plan)
     '''
-    return plan,plan_cost
+    return plan,plan_costdrix
 
 def get_feat_map_from_states(num_features):
     '''
@@ -262,8 +285,11 @@ def update_domain_template_and_problem_file(problem_file_used):
     '''
     This function updates the domain.tpl.pddl file by replacing $terms which are already present in initial state as defined in the problem file
     '''
-    global PROBLEM_ROOT_PATH,domain_file_lines,unique_words
-    domain = list(domain_file_lines)
+    global PROBLEM_ROOT_PATH
+    domain_template = open(PROBLEM_ROOT_PATH + 'scavenger.tpl.pddl', 'r')
+    domain = domain_template.readlines()
+    domain_template.close()
+
     problem_file = open(PROBLEM_ROOT_PATH+"p"+str(problem_file_used)+".pddl",'r')
     problem = problem_file.readlines()
     problem_file.close()
@@ -274,20 +300,21 @@ def update_domain_template_and_problem_file(problem_file_used):
             [situation_variables.append(str.upper(s.replace('(','').replace(')',''))) for s in re.findall(r'\$\(\w+\)+',problem[i])]
             problem[i]=problem[i].replace('$','')  #remove $ in problem file
 
-    #pp.pprint(situation_variables)
     common = list(set(unique_words).intersection(set(situation_variables))) #Situation variables which are also explanations
+    #applicable_actions =
+
     print("Common predicates: "+str(common))
-    domain_subs_dict = dict.fromkeys(unique_words,'') 
-    
+    domain_subs_dict = dict.fromkeys(unique_words,'')
+
 
     problem_file = open(PROBLEM_ROOT_PATH+"p"+str(problem_file_used)+"_edited.pddl",'w')
     problem_file.write(''.join(problem))
     problem_file.close()
-    
+
     subs_dict=dict.fromkeys(unique_words,'')
     for s in subs_dict.keys():
         if s in common:
-            subs_dict[s] = '('+str.lower(s[1:])+')' 
+            subs_dict[s] = '('+str.lower(s[1:])+')'
         else:
             subs_dict[s] = s
 
@@ -302,7 +329,9 @@ def update_domain_template_and_problem_file(problem_file_used):
     unique_words = get_actions(domain)
     print("Updated domain template and problem file")
     pp.pprint(unique_words)
-    return domain,unique_words
+
+
+    return domain,unique_words,applicable_actions
 
 if __name__ == "__main__":
     TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
@@ -324,40 +353,43 @@ if __name__ == "__main__":
 
     ######################################################
 
-    
+    '''
+        TODO:
+        give each action in the original template file a unique number
+        make applicable actions and change wherever unique_words is being used
 
-    for i in range(1,3):  #Verify that features are same irrespective of problem file used for generating features
-        domain_template = open(PROBLEM_ROOT_PATH + 'scavenger.tpl.pddl', 'r')
-        domain_file_lines = domain_template.readlines()
-        domain_template.close()  
-        unique_words = get_actions(domain_file_lines)
-        
-        problem_file_used = i
-        domain_file_lines,unique_words = update_domain_template_and_problem_file(problem_file_used)
+    '''
 
-        actions = range(len(unique_words)) #In this case, we use action indices as the actions itself instead of the explicit action names
-        A = len(actions)
-        states_dict,reverse_states_dict = get_state_map(A)
-        num_features = 3
+    problem_file_used = 1
+    domain_file_lines, unique_words = update_domain_template_and_problem_file(problem_file_used)
+    unique_words = get_actions(domain_file_lines)
     
-        P_a = get_transition_matrix()
-        '''    
-        if path.exists('feat_map.npy'):
-            print("Found features map file")
-            feat_map = np.load('feat_map.npy')
-        else:
-            feat_map = get_feat_map_from_states(num_features)
-            np.save('feat_map.npy',feat_map)
-        '''
-        with open('states_dict'+str(i)+'.pickle', 'wb') as handle:
-            pickle.dump(states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        with open('reverse_states_dict.pickle', 'wb') as handle:
-            pickle.dump(reverse_states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        
+    problem_file_used = i
+
+
+    actions = range(len(unique_words)) #In this case, we use action indices as the actions itself instead of the explicit action names
+    A = len(actions)
+    states_dict,reverse_states_dict = get_state_map(A)
+    num_features = 3
+
+    P_a = get_transition_matrix()
+    '''    
+    if path.exists('feat_map.npy'):
+        print("Found features map file")
+        feat_map = np.load('feat_map.npy')
+    else:
         feat_map = get_feat_map_from_states(num_features)
-        np.save('feat_map_new'+str(i)+'.npy', feat_map)
-        print("saved "+str(i))
-        print("Done")
+        np.save('feat_map.npy',feat_map)
+    '''
+    with open('states_dict'+str(i)+'.pickle', 'wb') as handle:
+        pickle.dump(states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    with open('reverse_states_dict.pickle', 'wb') as handle:
+        pickle.dump(reverse_states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    feat_map = get_feat_map_from_states(num_features)
+    np.save('feat_map_new'+str(i)+'.npy', feat_map)
+    print("saved "+str(i))
+    print("Done")
 
     '''
     trajectories = get_trajectories_from_traces()

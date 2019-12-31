@@ -54,7 +54,7 @@
 
 (:action open_basement
 :parameters (?room - roomOne) 
-:precondition (and (at ?room) (has_password) 
+:precondition (and (at ?room)  (has_accesskey)
 	    )
 :effect (and (basement_open)
 		)
@@ -111,7 +111,7 @@
 
 (:action open_roomTwo_window
 :parameters (?room - roomTwo) 
-:precondition (and (at ?room) (no_fire) (has_ladder) (has_hammer) 
+:precondition (and (at ?room)  (has_ladder) (has_hammer) 
 	    )
 :effect (and (hallway_open)
 		)
@@ -119,7 +119,7 @@
 
 (:action open_roomTwo_door
 :parameters (?room - roomTwo) 
-:precondition (and (at ?room) (door_unjammed) (no_fire)
+:precondition (and (at ?room) (door_unjammed) 
 	    )
 :effect (and (hallway_open)
 		)
