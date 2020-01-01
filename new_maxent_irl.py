@@ -19,12 +19,14 @@ def generate_stochastic_policy(P_a, rewards):
   N_STATES, _, N_ACTIONS = np.shape(P_a)
   z_s = np.ones((N_STATES,))
   z_a = np.zeros((N_STATES, N_ACTIONS))
-  #print(rewards)
 
   for t in range(T):
     for s in range(N_STATES):
       for a in range(N_ACTIONS):
-        z_a[s, a] = sum([ P_a[s, s1, a] * math.exp(rewards[s, s1]) * z_s[s1] for s1 in range(N_STATES)])
+        try:
+          z_a[s, a] = sum([ P_a[s, s1, a] * math.exp(rewards[s, s1]) * z_s[s1] for s1 in range(N_STATES)])
+        except IndexError as e :
+          input()
     z_s = np.sum(z_a, 1)
     for i in range(len(z_s)):
       #print(i)
@@ -130,7 +132,10 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
   feat_exp = np.zeros([N_FEATURES])
   for episode in trajs:
     for prev, nex in episode:
-      feat_exp += feat_map[prev, nex, :]
+      try:
+        feat_exp += feat_map[int(prev), int(nex), :]
+      except IndexError:
+        input()
   feat_exp = feat_exp/len(trajs)
 
   # training

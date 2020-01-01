@@ -11,7 +11,36 @@ import sys
 import copy
 
 
+def store_traces(trace_files,scenario_wise = False):
+    '''
+    input: tuple containing full path of demonstration files(Explanations)
+    This function parses the explanation files and stores in the global tuple traces in the order of scenarios
+    '''
+    global TRACE_ROOT_PATH
+    if scenario_wise:
+        traces = {}
+    else:
+        traces = []
 
+    num_scenarios = len(trace_files)
+
+    for i in range(num_scenarios):
+        scenario_file = open(trace_files[i],'r')
+        lines = scenario_file.readlines()
+        scenario_file.close()
+        trace = []
+        if scenario_wise:
+            traces[i]=[]
+        for line in lines:
+            if line[0]=='-':
+                if scenario_wise:
+                    traces[i].append(trace)
+                else:
+                    traces.append(trace)
+                trace = []
+            else:
+                trace.append(line.rstrip())
+    return traces
 
 def render_domain_template(D):
     '''
@@ -205,25 +234,23 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
     return feat_map
 
 
-def get_trajectories_from_traces(all_actions):
+def get_trajectories_from_traces(all_actions,traces,states_dict):
     '''
-    This funciton converts expert demos into state-action-trajectories of the shape: TXLx2 where T is the number of trajectories, L is the length of each trajectory
-    and each item is a state-action (int) pair
+    This function converts expert demos into state-next_state-trajectories of the shape: TXLx2 where T is the number of trajectories, L is the length of each trajectory
+    and each item is a state-next_state (int) pair
     '''
-    global traces, states_dict, actions, reverse_states_dict
-    trajectories = np.zeros([len(traces), len(traces[0]), 2])
+    trajectories = np.zeros([len(traces), len(all_actions), 2])
     for i in range(len(traces)):
         state = []  # initial state, no explanations given
         for j in range(len(traces[i])):
-            action = all_actions.index('$' + str.upper(traces[i][j]))
+            action = all_actions['$' + str.upper(traces[i][j])]
             try:
-                trajectories[i, j, 0] = states_dict[tuple(state)]
+                trajectories[i, j, 0] = states_dict[tuple(sorted(state))]
             except KeyError:
                 print([i, j])
-
             state.append(action)
             try:
-                trajectories[i, j, 1] = states_dict[tuple(state)]
+                trajectories[i, j, 1] = states_dict[tuple(sorted(state))]
             except KeyError:
                 print([i, j])
     return trajectories
@@ -299,6 +326,10 @@ if __name__ == "__main__":
         pickle.dump(states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
     P_a = get_transition_matrix(all_actions, states_dict)
 
+    trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in range(1,8)]
+    traces = store_traces(trace_files)
+    trajectories = get_trajectories_from_traces(all_actions, traces, states_dict)
+
     for problem_file_used in range(1,3):
         updated_domain_template_lines,applicable_actions,difference_actions = \
             update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
@@ -317,8 +348,12 @@ if __name__ == "__main__":
         np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
         print("Done "+str(problem_file_used))
 
+
+    np.save("feat_map_final.npy",feat_map)
+    np.save("trajectories.npy",trajectories)
+    np.save("P_a.npy",P_a)
+
     '''
-    trajectories = get_trajectories_from_traces()
     gamma = 0.9
     lr = 0.08
     n_iters = 10

@@ -1,21 +1,17 @@
 has_key
 has_password
 no_fire
-can_climb
 -----------------
 has_password
 has_key
 no_fire
-can_climb
 -----------------
 has_key
 no_fire
-can_climb
 has_password
 -----------------
 has_key
 has_password
-can_climb
 no_fire
 
 
