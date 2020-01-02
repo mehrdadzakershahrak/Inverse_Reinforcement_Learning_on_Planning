@@ -20,7 +20,6 @@
 (door_unjammed)
 (exit ?room - loc)
 (has_fireExt)
-(has_hammer)
 (has_ladder)
 (has_key)
 (need_electric)
@@ -85,14 +84,6 @@
 )
 
 
-(:action get_hammer
-:parameters (?room - roomTwo) 
-:precondition (and (at ?room) (glass_broken)
-	    )
-:effect (and (has_hammer)
-		)
-)
-
 (:action release_emergency_handle
 :parameters (?room - roomTwo) 
 :precondition (and (at ?room)
@@ -111,7 +102,7 @@
 
 (:action open_roomTwo_window
 :parameters (?room - roomTwo) 
-:precondition (and (at ?room) $NO_FIRE $HAS_LADDER $HAS_HAMMER 
+:precondition (and (at ?room) $HAS_LADDER (no_fire)  
 	    )
 :effect (and (hallway_open)
 		)
@@ -119,7 +110,7 @@
 
 (:action open_roomTwo_door
 :parameters (?room - roomTwo) 
-:precondition (and (at ?room) (door_unjammed) $NO_FIRE
+:precondition (and (at ?room) (door_unjammed) (no_fire)
 	    )
 :effect (and (hallway_open)
 		)
@@ -159,7 +150,7 @@
 
 (:action use_electric_door
 :parameters (?room - roomThree) 
-:precondition (and (at ?room) $HAS_ELECTRICITY (activate_elecDoor) 
+:precondition (and (at ?room)  (activate_elecDoor) $HAS_ELECTRICITY
 	    )
 :effect (and (electricDoor_open)
 		)

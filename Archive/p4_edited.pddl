@@ -13,13 +13,10 @@
 (at start)
 
 ; Situation variables
-$(has_fireExt)
-$(has_ladder)
-$(need_electric)
-$(fire)
 
-
-
+(fire)
+(has_electricity)
+(has_accesskey)
 
 
 )

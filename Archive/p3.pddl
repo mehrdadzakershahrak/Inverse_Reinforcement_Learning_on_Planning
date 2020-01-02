@@ -13,9 +13,9 @@
 (at start)
 
 ; Situation variables
-(lock_open)
-(fire)
-(has_electricity)
+$(lock_open)
+$(fire)
+$(has_electricity)
 
 
 )

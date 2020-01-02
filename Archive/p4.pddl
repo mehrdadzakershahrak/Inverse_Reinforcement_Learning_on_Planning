@@ -14,8 +14,9 @@
 
 ; Situation variables
 
-(fire)
-(has_electricity)
+$(fire)
+$(has_electricity)
+$(has_accesskey)
 
 
 )

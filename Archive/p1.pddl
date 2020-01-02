@@ -15,6 +15,7 @@
 ; Situation variables
 $(has_accesskey) 
 $(fire)
+$(lock_open)
 $(need_electric)
 
 

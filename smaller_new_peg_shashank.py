@@ -199,12 +199,11 @@ def get_feat_map_from_states(num_features):
         plan, plan_cost = get_plan(0, state)
         features[state, state] = [0.0, 0.0, 0.0]  # calculate_features(plan,plan,plan_cost,plan_cost)
         for next_state in states_dict.values():
-            if any(P_a[state, :, next_state]) == 1:
+            if (any(P_a[state, :, next_state]) == 1) and (features[state,next_state]==[0.0,0.0,0.0]):
                 new_plan, new_plan_cost = get_plan(0, next_state)
                 f = calculate_features(plan, new_plan, plan_cost, new_plan_cost)
-                # if f==[0.0,0.0,0.0]:
-                #   print("Zero")
                 features[state, next_state] = f
+
     return features
 
 def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used):
@@ -228,7 +227,7 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
             if any(P_a[state_id, :, next_state_id]) == 1:
                 new_plan, new_plan_cost = get_plan(next_state,all_actions,problem_file_used)
                 feat_map[state_id, next_state_id] = calculate_features(plan, new_plan, plan_cost, new_plan_cost)
-            sys.stdout.write('\r' + "Progress:"+ str(count) + "/" +str(total_number))
+            sys.stdout.write('\r' + "Progress:"+ str(count) + "/" +str(total_number)+" ,applicable states:"+str(len(applicable_states)))
             sys.stdout.flush()
 
     return feat_map
@@ -321,16 +320,21 @@ if __name__ == "__main__":
 
     states_dict, reverse_states_dict = get_state_map(all_actions) #need all states
     N = len(states_dict)
+    print("total number of states: "+str(N))   
     feat_map = np.zeros([N, N, num_features])
+    
     with open('states_dict.pickle', 'wb') as handle:
         pickle.dump(states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    with open('all_actions.pickle', 'wb') as handle:
+        pickle.dump(all_actions, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
     P_a = get_transition_matrix(all_actions, states_dict)
 
     trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in range(1,8)]
     traces = store_traces(trace_files)
     trajectories = get_trajectories_from_traces(all_actions, traces, states_dict)
 
-    for problem_file_used in range(1,3):
+    for problem_file_used in range(1,9):
         updated_domain_template_lines,applicable_actions,difference_actions = \
             update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
         applicable_states = []
@@ -346,12 +350,15 @@ if __name__ == "__main__":
         print("Calculating feature map")
         feat_map = get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used)
         np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
-        print("Done "+str(problem_file_used))
+        print("\n Done "+str(problem_file_used))
+        print("---------------------------------")
 
 
     np.save("feat_map_final.npy",feat_map)
     np.save("trajectories.npy",trajectories)
     np.save("P_a.npy",P_a)
+    
+    
 
     '''
     gamma = 0.9

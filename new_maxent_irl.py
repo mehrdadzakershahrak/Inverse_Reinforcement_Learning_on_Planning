@@ -65,7 +65,7 @@ def generate_trajectories(P_a, policy):
     while(i<N_ACTIONS):
       action = np.random.choice(np.arange(0,N_ACTIONS), p=policy[current_state])
       for next_state in range(current_state, N_STATES):
-        print(i, next_state)
+        #print(i, next_state)
         if P_a[current_state, next_state, action] == 1:
           trajectory += [(current_state, next_state)]
           current_state = next_state
@@ -139,12 +139,12 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
   feat_exp = feat_exp/len(trajs)
 
   # training
-  lr_const = 0.1/250
+  lr_const = lr/n_iters
   for iteration in range(n_iters):
 
     # compute reward function
     rewards = np.dot(feat_map, theta)
-    print(rewards.shape)
+    #print(rewards.shape)
 
     # compute policy
     #_, policy = value_iteration.value_iteration(P_a, rewards, gamma, error=0.01, deterministic=False)

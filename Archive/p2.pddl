@@ -16,6 +16,7 @@
 $(has_ladder)
 $(fire)
 $(need_electric)
+$(has_password)
 
 
 )

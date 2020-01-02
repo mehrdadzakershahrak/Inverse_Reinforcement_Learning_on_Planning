@@ -42,7 +42,7 @@ def value_iteration(P_a, rewards, gamma, error=0.01, deterministic=True):
 
     for s in range(N_STATES):
       v_s = []
-      values[s] = max([sum([P_a[s, a, s1]*(rewards[s] + gamma*values_tmp[s1]) for s1 in range(N_STATES)]) for a in range(N_ACTIONS)])
+      values[s] = max([sum([P_a[s, a, s1]*(rewards[s,s1] + gamma*values_tmp[s1]) for s1 in range(N_STATES)]) for a in range(N_ACTIONS)])
 
     if max([abs(values[s] - values_tmp[s]) for s in range(N_STATES)]) < error:
       break
@@ -53,7 +53,7 @@ def value_iteration(P_a, rewards, gamma, error=0.01, deterministic=True):
     # generate deterministic policy
     policy = np.zeros([N_STATES])
     for s in range(N_STATES):
-      policy[s] = np.argmax([sum([P_a[s, a, s1]*(rewards[s]+gamma*values[s1]) 
+      policy[s] = np.argmax([sum([P_a[s, a, s1]*(rewards[s,s1]+gamma*values[s1]) 
                                   for s1 in range(N_STATES)]) 
                                   for a in range(N_ACTIONS)])
 
@@ -62,7 +62,7 @@ def value_iteration(P_a, rewards, gamma, error=0.01, deterministic=True):
     # generate stochastic policy
     policy = np.zeros([N_STATES, N_ACTIONS])
     for s in range(N_STATES):
-      v_s = np.array([sum([P_a[s, a, s1]*(rewards[s] + gamma*values[s1]) for s1 in range(N_STATES)]) for a in range(N_ACTIONS)])
+      v_s = np.array([sum([P_a[s, a, s1]*(rewards[s,s1] + gamma*values[s1]) for s1 in range(N_STATES)]) for a in range(N_ACTIONS)])
       temp = np.sum(v_s)
       if not(temp==0):
         policy[s,:] = np.transpose(v_s/temp)

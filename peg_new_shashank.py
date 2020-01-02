@@ -386,6 +386,7 @@ if __name__ == "__main__":
     with open('reverse_states_dict.pickle', 'wb') as handle:
         pickle.dump(reverse_states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
+    
     feat_map = get_feat_map_from_states(num_features)
     np.save('feat_map_new'+str(i)+'.npy', feat_map)
     print("saved "+str(i))

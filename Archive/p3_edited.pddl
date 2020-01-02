@@ -1,4 +1,4 @@
-(define (problem p2) (:domain scavenger)
+(define (problem p3) (:domain scavenger)
 (:objects
 	start - roomZero
     basement - roomOne
@@ -11,8 +11,12 @@
 (can_go basement hallway)
 (can_go hallway elecDoor)
 (at start)
-(has_electricity)
+
+; Situation variables
+(lock_open)
 (fire)
+(has_electricity)
+
 
 )
 
