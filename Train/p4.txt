@@ -14,4 +14,20 @@ has_password
 has_key
 has_ladder
 -------------------------
+has_password
+has_key
+has_ladder
+-------------------------
+has_password
+has_key
+has_ladder
+-------------------------
+has_password
+has_key
+has_ladder
+-------------------------
+has_password
+has_key
+has_ladder
+-------------------------
 
