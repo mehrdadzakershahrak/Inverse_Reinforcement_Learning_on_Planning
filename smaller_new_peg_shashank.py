@@ -215,18 +215,37 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
     :param transition_P: Transition matrix of the form (s,a,s') [NxAxN]
     :return: feature map containing features for all state-next_state pair.
     '''
+    global state_pairs_found
     total_number = 1.0*len(applicable_states)**2
     count = 0.0
+    c = 0
     for state in applicable_states:
         for next_state in applicable_states:
-            count+=1
-            state_id = states_dict[state]
-            next_state_id = states_dict[next_state]
-            plan, plan_cost = get_plan(state,all_actions,problem_file_used)
-            feat_map[state_id, state_id] = [0.0, 0.0, 0.0]  # calculate_features(plan,plan,plan_cost,plan_cost)
-            if any(P_a[state_id, :, next_state_id]) == 1:
-                new_plan, new_plan_cost = get_plan(next_state,all_actions,problem_file_used)
-                feat_map[state_id, next_state_id] = calculate_features(plan, new_plan, plan_cost, new_plan_cost)
+            c+=1
+            s1 = set(sorted(state))
+            s2 = set(sorted(next_state))
+            if s1.issubset(s2) and (len(s2)-len(s1)==1): #possible state-pair
+                if [s1,s2] not in state_pairs_found:
+                    state_pairs_found.append([state,next_state])
+                count+=1
+                state_id = states_dict[state]
+                next_state_id = states_dict[next_state]
+                plan, plan_cost = get_plan(state,all_actions,problem_file_used)
+                feat_map[state_id, state_id] = [0.0, 0.0, 0.0]  # calculate_features(plan,plan,plan_cost,plan_cost)
+                if any(P_a[state_id, :, next_state_id]) == 1:
+                    new_plan, new_plan_cost = get_plan(next_state,all_actions,problem_file_used)
+                    features = calculate_features(plan, new_plan, plan_cost, new_plan_cost)
+                    if any(feat_map[state_id, next_state_id]!= features) and (any(feat_map[state_id,next_state_id]!=[0.0,0.0,0.0])) and features!=[0.0,0.0,0.0]:
+                        print(state)
+                        print(next_state)
+                        print(feat_map[state_id,next_state_id])
+                        print(features)
+                        print("Incorrect!")
+                        input()
+                    else:
+                        feat_map[state_id, next_state_id] = features
+                
+
             sys.stdout.write('\r' + "Progress:"+ str(count) + "/" +str(total_number)+" ,applicable states:"+str(len(applicable_states)))
             sys.stdout.flush()
 
@@ -243,7 +262,11 @@ def get_trajectories_from_traces(all_actions,trace_list,states_dict,initial_stat
     count = 0
     for sc in range(len(trace_list)): #for each scenario
         for i in range(len(trace_list[sc])): # for each trace of each scenario
-            state = list(initial_states[sc])
+            try:
+                state = list(initial_states[sc])
+            except IndexError as e:
+                print("HERE")
+                input()
             for j in range(len(trace_list[sc][i])): #for each explanation of each trace
                 action = all_actions['$' + str.upper(trace_list[sc][i][j])]                
                 try:
@@ -335,11 +358,38 @@ if __name__ == "__main__":
     
     P_a = get_transition_matrix(all_actions, states_dict)
 
+    state_pairs_found = []
+
     trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in range(1,9)]
     traces = store_traces(trace_files,scenario_wise=True)
     initial_states = []
     print("All Actions:")
     pp.pprint(all_actions)
+    problem_file_used = 0
+    updated_domain_template_lines,applicable_actions,difference_actions = \
+        update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
+    #s = [] #initial state for the problem file used
+    #for a in difference_actions:
+    #    s.append(all_actions[a])
+    #initial_states.append(tuple(s))
+    #print(initial_states)
+    applicable_states = []
+    #pass only applicable states to feat_map
+    for state in states_dict.keys():
+        dont_add = False
+        for action in difference_actions:
+            if all_actions[action] in state:
+                dont_add = True
+        if not dont_add:
+            applicable_states.append(state)
+
+    print("Calculating feature map")
+    feat_map = get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used)
+    np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
+    print("\n Done "+str(problem_file_used))
+    print("---------------------------------")
+
+
     for problem_file_used in range(1,9):
         updated_domain_template_lines,applicable_actions,difference_actions = \
             update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
@@ -348,27 +398,20 @@ if __name__ == "__main__":
             s.append(all_actions[a])
         initial_states.append(tuple(s))
         print(initial_states)
-        applicable_states = []
-        #pass only applicable states to feat_map
-        for state in states_dict.keys():
-            dont_add = False
-            for action in difference_actions:
-                if all_actions[action] in state:
-                    dont_add = True
-            if not dont_add:
-                applicable_states.append(state)
-
-        print("Calculating feature map")
-        feat_map = get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used)
-        np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
-        print("\n Done "+str(problem_file_used))
-        print("---------------------------------")
-
+        
     trajectories = get_trajectories_from_traces(all_actions, traces, states_dict,initial_states)
     np.save("feat_map_final.npy",feat_map)
     np.save("trajectories.npy",trajectories)
     np.save("P_a.npy",P_a)
-    
+    for state in states_dict.keys():
+        for next_state in states_dict.keys():
+            if [state,next_state] not in state_pairs_found:
+                s1 = set(sorted(state))
+                s2 = set(sorted(next_state))
+                if s1.issubset(s2) and (len(s2)-len(s1) == 1): #possible state-pair
+                    print(str([state,next_state]))
+
+    print(len(state_pairs_found))
     
 
     '''
