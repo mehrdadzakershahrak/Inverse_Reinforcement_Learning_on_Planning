@@ -1,5 +1,6 @@
 import numpy as np
 import pickle 
+'''
 states_dict1 =  pickle.load( open( "states_dict1.pickle", "rb" ) )
 states_dict2 =  pickle.load( open( "states_dict2.pickle", "rb" ) )
 feat_map1 = np.load('feat_map_new1.npy')
@@ -21,3 +22,8 @@ for state1 in common:
 		result.append(all(feat_map1[state1,state2]==feat_map2[state1,state2]))
 print(result)
 print(all(result))
+'''
+states_dict =  pickle.load( open( "states_dict.pickle", "rb" ) )
+all_actions =  pickle.load( open( "all_actions.pickle", "rb" ) )
+feat_map1 = np.load('feat_map_new1.npy')
+feat_map2 = np.load('feat_map_new2.npy')

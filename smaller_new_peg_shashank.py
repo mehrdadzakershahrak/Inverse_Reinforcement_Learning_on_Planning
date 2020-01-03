@@ -233,25 +233,30 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
     return feat_map
 
 
-def get_trajectories_from_traces(all_actions,traces,states_dict):
+def get_trajectories_from_traces(all_actions,trace_list,states_dict,initial_states):
     '''
     This function converts expert demos into state-next_state-trajectories of the shape: TXLx2 where T is the number of trajectories, L is the length of each trajectory
     and each item is a state-next_state (int) pair
     '''
-    trajectories = np.zeros([len(traces), len(all_actions), 2])
-    for i in range(len(traces)):
-        state = []  # initial state, no explanations given
-        for j in range(len(traces[i])):
-            action = all_actions['$' + str.upper(traces[i][j])]
-            try:
-                trajectories[i, j, 0] = states_dict[tuple(sorted(state))]
-            except KeyError:
-                print([i, j])
-            state.append(action)
-            try:
-                trajectories[i, j, 1] = states_dict[tuple(sorted(state))]
-            except KeyError:
-                print([i, j])
+    num_traces = len(trace_list[0])*len(trace_list)
+    trajectories = np.zeros([num_traces, len(all_actions), 2])
+    count = 0
+    for sc in range(len(trace_list)): #for each scenario
+        for i in range(len(trace_list[sc])): # for each trace of each scenario
+            state = list(initial_states[sc])
+            for j in range(len(trace_list[sc][i])): #for each explanation of each trace
+                action = all_actions['$' + str.upper(trace_list[sc][i][j])]                
+                try:
+                    trajectories[count, j, 0] = states_dict[tuple(sorted(state))]
+                except KeyError:
+                    print([i, j])
+                state.append(action)
+                try:
+                    trajectories[count, j, 1] = states_dict[tuple(sorted(state))]
+                except KeyError:
+                    print([i, j])
+            count+=1
+
     return trajectories
 
 
@@ -330,13 +335,19 @@ if __name__ == "__main__":
     
     P_a = get_transition_matrix(all_actions, states_dict)
 
-    trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in range(1,8)]
-    traces = store_traces(trace_files)
-    trajectories = get_trajectories_from_traces(all_actions, traces, states_dict)
-
+    trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in range(1,9)]
+    traces = store_traces(trace_files,scenario_wise=True)
+    initial_states = []
+    print("All Actions:")
+    pp.pprint(all_actions)
     for problem_file_used in range(1,9):
         updated_domain_template_lines,applicable_actions,difference_actions = \
             update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
+        s = [] #initial state for the problem file used
+        for a in difference_actions:
+            s.append(all_actions[a])
+        initial_states.append(tuple(s))
+        print(initial_states)
         applicable_states = []
         #pass only applicable states to feat_map
         for state in states_dict.keys():
@@ -353,7 +364,7 @@ if __name__ == "__main__":
         print("\n Done "+str(problem_file_used))
         print("---------------------------------")
 
-
+    trajectories = get_trajectories_from_traces(all_actions, traces, states_dict,initial_states)
     np.save("feat_map_final.npy",feat_map)
     np.save("trajectories.npy",trajectories)
     np.save("P_a.npy",P_a)
