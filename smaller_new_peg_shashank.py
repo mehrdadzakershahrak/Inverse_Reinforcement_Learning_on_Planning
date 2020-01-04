@@ -181,14 +181,15 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_ac
     '''
     lav_dist = laven_dist(plan1, plan2)
     plan_dist = plan_distance(plan1, plan2)
-    f1 = np.zeros([1,len(all_actions)]).tolist()
-    f2 = np.zeros([1,len(all_actions)]).tolist()
-    for a in all_actions.keys():
+    f1 = [0]*len(all_actions)
+    f2 = [0]*len(all_actions)
+    for a in range(len(all_actions)):
         if a in state1:
             f1[a]=1
         if a in state2:
             f2[a]=1
-    return [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
+    f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
+    return f
 
 
 def get_feat_map_from_states(num_features):
