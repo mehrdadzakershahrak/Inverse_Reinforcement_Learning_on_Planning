@@ -391,7 +391,7 @@ if __name__ == "__main__":
     print("---------------------------------")
 
 
-    for problem_file_used in range(1,9):
+    for problem_file_used in [1,3,5,6,7]:
         updated_domain_template_lines,applicable_actions,difference_actions = \
             update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
         s = [] #initial state for the problem file used
