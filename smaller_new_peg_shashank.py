@@ -184,9 +184,9 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_ac
     f1 = np.zeros([1,len(all_actions)]).tolist()
     f2 = np.zeros([1,len(all_actions)]).tolist()
     for a in all_actions.keys():
-        if a in f1:
+        if a in state1:
             f1[a]=1
-        if a in f2:
+        if a in state2:
             f2[a]=1
     return [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
 
