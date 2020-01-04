@@ -168,7 +168,7 @@ def get_plan(state,all_actions,problem_file_used):
     return plan, plan_cost
 
 
-def calculate_features(plan1, plan2, plan1_cost, plan2_cost):
+def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_actions):
     '''
     input: 2 plans and an explanation
     output: feature vectors corresponding to the inputs
@@ -181,7 +181,14 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost):
     '''
     lav_dist = laven_dist(plan1, plan2)
     plan_dist = plan_distance(plan1, plan2)
-    return [lav_dist, plan_dist, abs(plan1_cost - plan2_cost)]
+    f1 = np.zeros([1,len(all_actions)]).tolist()
+    f2 = np.zeros([1,len(all_actions)]).tolist()
+    for a in all_actions.keys():
+        if a in f1:
+            f1[a]=1
+        if a in f2:
+            f2[a]=1
+    return [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
 
 
 def get_feat_map_from_states(num_features):
@@ -201,12 +208,12 @@ def get_feat_map_from_states(num_features):
         for next_state in states_dict.values():
             if (any(P_a[state, :, next_state]) == 1) and (features[state,next_state]==[0.0,0.0,0.0]):
                 new_plan, new_plan_cost = get_plan(0, next_state)
-                f = calculate_features(plan, new_plan, plan_cost, new_plan_cost)
+                f = calculate_features(plan, new_plan, plan_cost, new_plan_cost,state,next_state)
                 features[state, next_state] = f
 
     return features
 
-def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used):
+def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used,all_actions):
     '''
     OVERLOADED FUNCTION: for updating feat_map from applicable actions
     This function calculates the features corresponding to the states containined in states_dict
@@ -219,6 +226,7 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
     total_number = 1.0*len(applicable_states)**2
     count = 0.0
     c = 0
+    num_features = 13
     for state in applicable_states:
         for next_state in applicable_states:
             c+=1
@@ -231,20 +239,12 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
                 state_id = states_dict[state]
                 next_state_id = states_dict[next_state]
                 plan, plan_cost = get_plan(state,all_actions,problem_file_used)
-                feat_map[state_id, state_id] = [0.0, 0.0, 0.0]  # calculate_features(plan,plan,plan_cost,plan_cost)
+                feat_map[state_id, state_id] = np.zeros([1,num_features])# calculate_features(plan,plan,plan_cost,plan_cost)
                 if any(P_a[state_id, :, next_state_id]) == 1:
                     new_plan, new_plan_cost = get_plan(next_state,all_actions,problem_file_used)
-                    features = calculate_features(plan, new_plan, plan_cost, new_plan_cost)
-                    if any(feat_map[state_id, next_state_id]!= features) and (any(feat_map[state_id,next_state_id]!=[0.0,0.0,0.0])) and features!=[0.0,0.0,0.0]:
-                        print(state)
-                        print(next_state)
-                        print(feat_map[state_id,next_state_id])
-                        print(features)
-                        print("Incorrect!")
-                        input()
-                    else:
-                        feat_map[state_id, next_state_id] = features
-                
+                    features = calculate_features(plan, new_plan, plan_cost, new_plan_cost,state,next_state,all_actions)
+                    feat_map[state_id, next_state_id] = features
+
 
             sys.stdout.write('\r' + "Progress:"+ str(count) + "/" +str(total_number)+" ,applicable states:"+str(len(applicable_states)))
             sys.stdout.flush()
@@ -339,7 +339,7 @@ if __name__ == "__main__":
     PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
-    num_features = 3
+    num_features = 13
 
     with open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl', 'r') as f:
         og_template = f.readlines()
@@ -384,7 +384,7 @@ if __name__ == "__main__":
             applicable_states.append(state)
 
     print("Calculating feature map")
-    feat_map = get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used)
+    feat_map = get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used,all_actions)
     np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
     print("\n Done "+str(problem_file_used))
     print("---------------------------------")
