@@ -361,7 +361,7 @@ if __name__ == "__main__":
 
     state_pairs_found = []
 
-    trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in range(1,9)]
+    trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in [1,3,5,6,7]]
     traces = store_traces(trace_files,scenario_wise=True)
     initial_states = []
     print("All Actions:")
