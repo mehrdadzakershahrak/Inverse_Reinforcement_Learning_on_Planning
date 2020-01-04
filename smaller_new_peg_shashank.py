@@ -188,7 +188,9 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_ac
             f1[a]=1
         if a in state2:
             f2[a]=1
-    f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
+    #f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
+    f = [plan_dist,*np.append(np.array(f1),np.array(f2)).tolist()]
+
     return f
 
 
@@ -227,7 +229,7 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
     total_number = 1.0*len(applicable_states)**2
     count = 0.0
     c = 0
-    num_features = 13
+    num_features = 11
     for state in applicable_states:
         for next_state in applicable_states:
             c+=1
@@ -340,7 +342,10 @@ if __name__ == "__main__":
     PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
-    num_features = 13
+    num_features = 11
+
+
+    files_used = [0]
 
     with open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl', 'r') as f:
         og_template = f.readlines()
@@ -361,7 +366,7 @@ if __name__ == "__main__":
 
     state_pairs_found = []
 
-    trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in [1,3,5,6,7]]
+    trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in files_used]
     traces = store_traces(trace_files,scenario_wise=True)
     initial_states = []
     print("All Actions:")
@@ -391,7 +396,7 @@ if __name__ == "__main__":
     print("---------------------------------")
 
 
-    for problem_file_used in [1,3,5,6,7]:
+    for problem_file_used in files_used:
         updated_domain_template_lines,applicable_actions,difference_actions = \
             update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
         s = [] #initial state for the problem file used
@@ -413,14 +418,3 @@ if __name__ == "__main__":
                     print(str([state,next_state]))
 
     print(len(state_pairs_found))
-    
-
-    '''
-    gamma = 0.9
-    lr = 0.08
-    n_iters = 10
-
-    print("Done calculating feat_maps, running IRL")
-    rewards = maxent_irl(feat_map, P_a, gamma, trajectories, lr, n_iters)
-    print(rewards)
-    '''

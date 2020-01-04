@@ -145,7 +145,7 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
   for iteration in range(n_iters):
 
     # compute reward function
-    rewards = np.dot(feat_map, theta)
+    rewards = normalize(np.dot(feat_map, theta))
     #print(rewards.shape)
 
     # compute policy
