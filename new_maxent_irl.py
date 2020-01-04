@@ -25,7 +25,9 @@ def generate_stochastic_policy(P_a, rewards):
       for a in range(N_ACTIONS):
         try:
           z_a[s, a] = sum([ P_a[s, s1, a] * math.exp(rewards[s, s1]) * z_s[s1] for s1 in range(N_STATES)])
-        except IndexError as e :
+
+        except OverflowError:
+          [print(rewards[s, s1]) for s1 in range(N_STATES)]
           input()
     z_s = np.sum(z_a, 1)
     for i in range(len(z_s)):

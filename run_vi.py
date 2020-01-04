@@ -14,7 +14,7 @@ values,policy= value_iteration(P_a, rewards, gamma, error=0.01, deterministic=Tr
 print(policy)
 print(values)
 print(rewards)
-init_state = (3,4)
+init_state = (4,)
 state = init_state
 print(states_dict)
 state_id = states_dict[init_state] #no HAS_ELECTRICITY
