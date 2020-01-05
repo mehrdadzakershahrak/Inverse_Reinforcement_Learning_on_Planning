@@ -30,3 +30,12 @@ has_accesskey
 has_key
 has_electricity
 -------------------------
+has_accesskey
+has_key
+has_electricity
+-------------------------
+has_accesskey
+has_key
+has_electricity
+-------------------------
+

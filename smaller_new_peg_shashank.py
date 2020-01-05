@@ -179,7 +179,7 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_ac
     calculate_domain_dependent_features based on explanation
     return all values in an array
     '''
-    lav_dist = laven_dist(plan1, plan2)
+    lav_dist = laven_dist(plan1, plan2) 
     plan_dist = plan_distance(plan1, plan2)
     f1 = [0]*len(all_actions)
     f2 = [0]*len(all_actions)
@@ -188,9 +188,8 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_ac
             f1[a]=1
         if a in state2:
             f2[a]=1
-    #f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
-    f = [plan_dist,*np.append(np.array(f1),np.array(f2)).tolist()]
-
+    f = [plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
+    
     return f
 
 
@@ -229,7 +228,7 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
     total_number = 1.0*len(applicable_states)**2
     count = 0.0
     c = 0
-    num_features = 11
+    num_features = 12
     for state in applicable_states:
         for next_state in applicable_states:
             c+=1
@@ -342,10 +341,10 @@ if __name__ == "__main__":
     PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
-    num_features = 11
+    num_features = 12
 
 
-    files_used = [0]
+    files_used = [1,2,3,4,5,6,7]
 
     with open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl', 'r') as f:
         og_template = f.readlines()
@@ -406,6 +405,12 @@ if __name__ == "__main__":
         print(initial_states)
         
     trajectories = get_trajectories_from_traces(all_actions, traces, states_dict,initial_states)
+    
+    for i in range(np.shape(trajectories)[0]):
+        if list(trajectories[i,-1,:])==[0.0,0.0]:
+            trajectories[i,-1,:]=[31,31]
+
+
     np.save("feat_map_final.npy",feat_map)
     np.save("trajectories.npy",trajectories)
     np.save("P_a.npy",P_a)

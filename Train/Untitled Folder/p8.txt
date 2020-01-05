@@ -30,12 +30,4 @@ has_accesskey
 has_electricity
 has_ladder
 -------------------------
-has_accesskey
-has_electricity
-has_ladder
--------------------------
-has_accesskey
-has_electricity
-has_ladder
--------------------------
 

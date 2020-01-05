@@ -14,7 +14,7 @@ values,policy= value_iteration(P_a, rewards, gamma, error=0.01, deterministic=Tr
 print(policy)
 print(values)
 print(rewards)
-init_state = ()
+init_state = (1,)
 state = init_state
 print(states_dict)
 state_id = states_dict[init_state] #no HAS_ELECTRICITY
@@ -32,5 +32,9 @@ while True:
 	print(action_template)
 	state = list(state)
 	state.append(action)
+	if sorted(state) == [0,1,2,3,4]:
+		break
 	state_id=states_dict[tuple(sorted(state))]
+
+	
 
