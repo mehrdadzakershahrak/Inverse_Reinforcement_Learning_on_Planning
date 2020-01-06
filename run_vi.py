@@ -11,30 +11,34 @@ with open('states_dict.pickle', 'rb') as file:
     
 gamma = 0.9
 values,policy= value_iteration(P_a, rewards, gamma, error=0.01, deterministic=True)
-print(policy)
-print(values)
-print(rewards)
-init_state = (1,)
-state = init_state
-print(states_dict)
-state_id = states_dict[init_state] #no HAS_ELECTRICITY
+#print(policy)
+#print(values)
+#print(rewards)
+count = 0
 with open('all_actions.pickle', 'rb') as file:
-        all_actions=pickle.load(file)
+	        all_actions=pickle.load(file)
 
-reverse_actions={}
+print("------------------------------------------")
+for init_state in [(), (1,), (3, 4), (2,), (1, 2), (3,), (4,), (0,), (0, 4)]:
+	print(count)
+	state = tuple(sorted(list(init_state)))
+	print(states_dict)
+	state_id = states_dict[state] 
+	reverse_actions={}
 
-for key in all_actions.keys():
-	reverse_actions[all_actions[key]]=key
+	for key in all_actions.keys():
+		reverse_actions[all_actions[key]]=key
 
-while True:
-	action = int(policy[state_id])
-	action_template = reverse_actions[action]
-	print(action_template)
-	state = list(state)
-	state.append(action)
-	if sorted(state) == [0,1,2,3,4]:
-		break
-	state_id=states_dict[tuple(sorted(state))]
+	while True:
+		action = int(policy[state_id])
+		action_template = reverse_actions[action]
+		print(action_template)
+		state = list(state)
+		state.append(action)
+		if sorted(state) == [0,1,2,3,4]:
+			break
+		state_id=states_dict[tuple(sorted(state))]
+	count+=1
 
 	
 

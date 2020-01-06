@@ -12,6 +12,7 @@ By Yiren Lu (luyirenmax@gmail.com), May 2017
 import numpy as np
 import value_iteration
 from utils import *
+import sys
 
 
 def generate_stochastic_policy(P_a, rewards):
@@ -165,11 +166,13 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
     grad = feat_exp - val
     # update params
     theta += lr * grad
-    print("******************************"+ str(iteration) +"******************************************")
-    print(theta)
+    #print("******************************"+ str(iteration) +"******************************************")
+    #print(theta)
     #np.save("final_thetas", arr=theta)
     lr -= lr_const
-
+    sys.stdout.write('\r' + "Progress:"+ str(iteration) + "/" +str(n_iters))#+" ,applicable states:"+str(theta))
+    sys.stdout.flush()  
+  print(theta)
   rewards = np.dot(feat_map, theta)
 
   return normalize(rewards)

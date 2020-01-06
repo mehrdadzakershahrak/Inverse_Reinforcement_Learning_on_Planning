@@ -344,7 +344,7 @@ if __name__ == "__main__":
     num_features = 12
 
 
-    files_used = [1,2,3,4,5,6,7]
+    files_used = [0,1,2,3,4,5,6,7,8]
 
     with open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl', 'r') as f:
         og_template = f.readlines()
@@ -409,6 +409,8 @@ if __name__ == "__main__":
     for i in range(np.shape(trajectories)[0]):
         if list(trajectories[i,-1,:])==[0.0,0.0]:
             trajectories[i,-1,:]=[31,31]
+        if list(trajectories[i,-2,:])==[0.0,0.0]:
+            trajectories[i,-2,:]=[31,31]
 
 
     np.save("feat_map_final.npy",feat_map)
@@ -422,4 +424,6 @@ if __name__ == "__main__":
                 if s1.issubset(s2) and (len(s2)-len(s1) == 1): #possible state-pair
                     print(str([state,next_state]))
 
-    print(len(state_pairs_found))
+    #print(len(state_pairs_found))
+    print(trajectories)
+    print(initial_states)
