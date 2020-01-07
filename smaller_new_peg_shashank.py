@@ -5,10 +5,10 @@ import os
 from itertools import chain, combinations
 from feature_functions import laven_dist, plan_distance
 import pickle
-from new_maxent_irl import maxent_irl
 from os import path
 import sys
 import copy
+from utils import *
 
 
 def store_traces(trace_files,scenario_wise = False):
@@ -188,7 +188,7 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_ac
             f1[a]=1
         if a in state2:
             f2[a]=1
-    f = [plan_dist, abs(plan1_cost - plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
+    f = [*np.append(np.array(f1),np.array(f2)).tolist()]
     
     return f
 
@@ -228,7 +228,7 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
     total_number = 1.0*len(applicable_states)**2
     count = 0.0
     c = 0
-    num_features = 12
+    num_features = 10
     for state in applicable_states:
         for next_state in applicable_states:
             c+=1
@@ -341,10 +341,10 @@ if __name__ == "__main__":
     PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
-    num_features = 12
+    num_features = 10
 
 
-    files_used = [0,1,2,3,4,5,6,7,8]
+    files_used = [1,2,3,4,5,6,7,8]
 
     with open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl', 'r') as f:
         og_template = f.readlines()
@@ -373,11 +373,7 @@ if __name__ == "__main__":
     problem_file_used = 0
     updated_domain_template_lines,applicable_actions,difference_actions = \
         update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
-    #s = [] #initial state for the problem file used
-    #for a in difference_actions:
-    #    s.append(all_actions[a])
-    #initial_states.append(tuple(s))
-    #print(initial_states)
+   
     applicable_states = []
     #pass only applicable states to feat_map
     for state in states_dict.keys():
@@ -391,6 +387,12 @@ if __name__ == "__main__":
     print("Calculating feature map")
     feat_map = get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used,all_actions)
     np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
+    
+    for i in range(np.shape(feat_map)[-1]):
+        feat_map[:,:,i]=normalize(feat_map[:,:,i])
+
+
+
     print("\n Done "+str(problem_file_used))
     print("---------------------------------")
 
@@ -405,7 +407,7 @@ if __name__ == "__main__":
         print(initial_states)
         
     trajectories = get_trajectories_from_traces(all_actions, traces, states_dict,initial_states)
-    
+    print(trajectories)
     for i in range(np.shape(trajectories)[0]):
         if list(trajectories[i,-1,:])==[0.0,0.0]:
             trajectories[i,-1,:]=[31,31]
@@ -424,6 +426,17 @@ if __name__ == "__main__":
                 if s1.issubset(s2) and (len(s2)-len(s1) == 1): #possible state-pair
                     print(str([state,next_state]))
 
+    initial_states = []
+    for problem_file_used in [1,2,3,4,5,6,7,8]:
+        updated_domain_template_lines,applicable_actions,difference_actions = \
+            update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
+        s = [] #initial state for the problem file used
+        for a in difference_actions:
+            s.append(all_actions[a])
+        initial_states.append(tuple(s))
+        print(initial_states)
+    
     #print(len(state_pairs_found))
-    print(trajectories)
-    print(initial_states)
+    #print(trajectories)
+    #print(initial_states)
+    

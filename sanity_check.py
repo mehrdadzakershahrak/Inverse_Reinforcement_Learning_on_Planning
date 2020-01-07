@@ -40,18 +40,41 @@ def get_stats(trace_list):
         'has_key':{1:0,2:0,3:0,4:0,5:0},
         'has_ladder':{1:0,2:0,3:0,4:0,5:0},
         'has_electricity':{1:0,2:0,3:0,4:0,5:0}}
-
+    total = {
+    'has_accesskey':0,
+    'has_password':0,
+    'has_key':0,
+    'has_ladder':0,
+    'has_electricity':0
+    }
     
+
+    stats={
+    0: {'has_accesskey':0,'has_password':0,'has_electricity':0,'has_key':0,'has_ladder':0},
+    1:{'has_accesskey':0,'has_password':0,'has_electricity':0,'has_key':0,'has_ladder':0},
+    2:{'has_accesskey':0,'has_password':0,'has_electricity':0,'has_key':0,'has_ladder':0},
+    3:{'has_accesskey':0,'has_password':0,'has_electricity':0,'has_key':0,'has_ladder':0},
+    }
+
     for sc in range(len(trace_list)): #for each scenario
         for i in range(len(trace_list[sc])): # for each trace of each scenario
-            actions[trace_list[sc][i]][i+1]+=1
+            stats[i][trace_list[sc][i]]+=1
+
+    '''
+    for a in actions:
+        total[a]=sum(actions[a].values())
+        for i in actions[a]:
+            actions[a][i]/=total[a]/100
+
+    '''
     pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(actions)
-    return actions
+    pp.pprint(stats)
+    #pp.pprint(total)
+    return stats
 
 
 TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
-files_used = [0,1,2,3,4,5,6,7,8]
+files_used = [1,2,3,4,5,6,7,8]
 trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in files_used]
 a = get_stats(store_traces(trace_files))
 max_keys = {}

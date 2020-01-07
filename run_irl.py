@@ -7,11 +7,11 @@ feat_map = np.load("feat_map_final.npy")
 traj = np.load("trajectories.npy")
 #print(traj)
 
-gamma = 0.9
+gamma = 0.9999999
 n_iters = 1000 #500/1000
 lr = 0.05	
 rewards = np.zeros([3,1])
-np.save("rewards.npy",rewards)
+#np.save("rewards.npy",rewards)
 rewards = maxent_irl(feat_map, P_a, gamma, traj, lr, n_iters)
 np.save("rewards.npy",rewards)
 #print(rewards)

@@ -9,9 +9,9 @@ P_a = np.load("P_a.npy")
 with open('states_dict.pickle', 'rb') as file:
         states_dict=pickle.load(file)
     
-gamma = 0.9
+gamma = 0.9999999
 values,policy= value_iteration(P_a, rewards, gamma, error=0.01, deterministic=True)
-#print(policy)
+print(policy)
 #print(values)
 #print(rewards)
 count = 0
@@ -19,7 +19,7 @@ with open('all_actions.pickle', 'rb') as file:
 	        all_actions=pickle.load(file)
 
 print("------------------------------------------")
-for init_state in [(), (1,), (3, 4), (2,), (1, 2), (3,), (4,), (0,), (0, 4)]:
+for init_state in [(),(1,), (2, 3), (0,), (1, 0), (2,), (3,), (4,), (3, 4)]:
 	print(count)
 	state = tuple(sorted(list(init_state)))
 	print(states_dict)
@@ -41,4 +41,12 @@ for init_state in [(), (1,), (3, 4), (2,), (1, 2), (3,), (4,), (0,), (0, 4)]:
 	count+=1
 
 	
+
+
+
+
+
+
+
+
 
