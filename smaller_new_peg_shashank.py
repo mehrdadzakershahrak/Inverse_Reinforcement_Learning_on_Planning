@@ -168,7 +168,7 @@ def get_plan(state,all_actions,problem_file_used):
     return plan, plan_cost
 
 
-def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_actions):
+def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2):
     '''
     input: 2 plans and an explanation
     output: feature vectors corresponding to the inputs
@@ -179,6 +179,7 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_ac
     calculate_domain_dependent_features based on explanation
     return all values in an array
     '''
+    all_actions = ['$HAS_KEY','$HAS_PASSWORD','$HAS_ACCESSKEY','$HAS_LADDER','$HAS_ELECTRICITY']
     lav_dist = laven_dist(plan1, plan2) 
     plan_dist = plan_distance(plan1, plan2)
     f1 = [0]*len(all_actions)
@@ -188,32 +189,10 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2,all_ac
             f1[a]=1
         if a in state2:
             f2[a]=1
-    f = [*np.append(np.array(f1),np.array(f2)).tolist()]
+    f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
     
     return f
 
-
-def get_feat_map_from_states(num_features):
-    '''
-    This function calculates the features corresponding to the states containined in states_dict
-    :param actions:     tuple containing all possible actions (numeric)
-    :param num_features: number of features
-    :param transition_P: Transition matrix of the form (s,a,s') [NxAxN]
-    :return: feature map containing features for all state-next_state pair.
-    '''
-    global states_dict, reverse_states_dict, actions, P_a
-    N = len(states_dict)
-    features = np.zeros([N, N, num_features])
-    for state in states_dict.values():  # states are unique numbers associated with each state here.
-        plan, plan_cost = get_plan(0, state)
-        features[state, state] = [0.0, 0.0, 0.0]  # calculate_features(plan,plan,plan_cost,plan_cost)
-        for next_state in states_dict.values():
-            if (any(P_a[state, :, next_state]) == 1) and (features[state,next_state]==[0.0,0.0,0.0]):
-                new_plan, new_plan_cost = get_plan(0, next_state)
-                f = calculate_features(plan, new_plan, plan_cost, new_plan_cost,state,next_state)
-                features[state, next_state] = f
-
-    return features
 
 def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used,all_actions):
     '''
@@ -224,11 +203,10 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
     :param transition_P: Transition matrix of the form (s,a,s') [NxAxN]
     :return: feature map containing features for all state-next_state pair.
     '''
-    global state_pairs_found
+    global state_pairs_found, num_features
     total_number = 1.0*len(applicable_states)**2
     count = 0.0
     c = 0
-    num_features = 10
     for state in applicable_states:
         for next_state in applicable_states:
             c+=1
@@ -244,7 +222,7 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
                 feat_map[state_id, state_id] = np.zeros([1,num_features])# calculate_features(plan,plan,plan_cost,plan_cost)
                 if any(P_a[state_id, :, next_state_id]) == 1:
                     new_plan, new_plan_cost = get_plan(next_state,all_actions,problem_file_used)
-                    features = calculate_features(plan, new_plan, plan_cost, new_plan_cost,state,next_state,all_actions)
+                    features = calculate_features(plan, new_plan, plan_cost, new_plan_cost,state,next_state)
                     feat_map[state_id, next_state_id] = features
 
 
@@ -337,11 +315,11 @@ def update_domain_template_and_problem_file(og_domain_template,problem_file_used
 
 
 if __name__ == "__main__":
-    TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
-    PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
+    TRACE_ROOT_PATH = '/headless/Desktop/Distance-Learning/Train/'
+    PROBLEM_ROOT_PATH = '/headless/Desktop/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
-    num_features = 10
+    num_features = 13
 
 
     files_used = [1,2,3,4,5,6,7,8]
@@ -427,7 +405,7 @@ if __name__ == "__main__":
                     print(str([state,next_state]))
 
     initial_states = []
-    for problem_file_used in [1,2,3,4,5,6,7,8]:
+    for problem_file_used in [0,1,2,3,4,5,6,7,8]:
         updated_domain_template_lines,applicable_actions,difference_actions = \
             update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
         s = [] #initial state for the problem file used
