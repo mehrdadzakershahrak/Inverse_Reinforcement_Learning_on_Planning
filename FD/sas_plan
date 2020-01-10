@@ -1,0 +1,6 @@
+(goes start c)
+(goes c b)
+(goes b e)
+(goes e j)
+(goes j goal)
+; cost = 29 (general cost)
