@@ -2,300 +2,143 @@ begin_version
 3
 end_version
 begin_metric
-0
+1
 end_metric
-16
+1
 begin_variable
 var0
 -1
-2
-Atom glass_broken()
-NegatedAtom glass_broken()
-end_variable
-begin_variable
-var1
--1
-2
-Atom handle_released()
-NegatedAtom handle_released()
-end_variable
-begin_variable
-var2
--1
-2
-Atom has_accesskey()
-NegatedAtom has_accesskey()
-end_variable
-begin_variable
-var3
--1
-2
-Atom has_password()
-NegatedAtom has_password()
-end_variable
-begin_variable
-var4
--1
-2
-Atom has_fireext()
-NegatedAtom has_fireext()
-end_variable
-begin_variable
-var5
--1
-2
-Atom has_ladder()
-NegatedAtom has_ladder()
-end_variable
-begin_variable
-var6
--1
-2
-Atom basement_open()
-NegatedAtom basement_open()
-end_variable
-begin_variable
-var7
--1
-2
-Atom no_fire()
-NegatedAtom no_fire()
-end_variable
-begin_variable
-var8
--1
-4
-Atom at(basement)
-Atom at(elecdoor)
-Atom at(hallway)
+10
+Atom at(a)
+Atom at(b)
+Atom at(c)
+Atom at(cross)
+Atom at(d)
+Atom at(e)
+Atom at(f)
+Atom at(goal)
+Atom at(j)
 Atom at(start)
-end_variable
-begin_variable
-var9
--1
-2
-Atom hallway_open()
-NegatedAtom hallway_open()
-end_variable
-begin_variable
-var10
--1
-2
-Atom has_key()
-NegatedAtom has_key()
-end_variable
-begin_variable
-var11
--1
-2
-Atom has_flashlight()
-NegatedAtom has_flashlight()
-end_variable
-begin_variable
-var12
--1
-2
-Atom has_electricity()
-NegatedAtom has_electricity()
-end_variable
-begin_variable
-var13
--1
-2
-Atom activate_elecdoor()
-NegatedAtom activate_elecdoor()
-end_variable
-begin_variable
-var14
--1
-2
-Atom electricdoor_open()
-NegatedAtom electricdoor_open()
-end_variable
-begin_variable
-var15
--1
-2
-Atom exit(elecdoor)
-NegatedAtom exit(elecdoor)
 end_variable
 0
 begin_state
-1
-1
-1
-1
-1
-1
-1
-1
-3
-1
-1
-1
-1
-1
-1
-1
+9
 end_state
 begin_goal
 1
-15 0
+0 7
 end_goal
-18
+16
 begin_operator
-access_computer basement
-1
-8 0
-1
-0 3 -1 0
-1
-end_operator
-begin_operator
-break_with_stone hallway
-1
-8 2
-1
-0 0 -1 0
-1
-end_operator
-begin_operator
-get_accesskey basement
-1
-8 0
-1
-0 2 -1 0
-1
-end_operator
-begin_operator
-get_fireext hallway
-2
-8 2
-0 0
-1
-0 4 -1 0
-1
-end_operator
-begin_operator
-get_flashlight elecdoor
-1
-8 1
-1
-0 11 -1 0
-1
-end_operator
-begin_operator
-get_key basement
-1
-8 0
-1
-0 10 -1 0
-1
-end_operator
-begin_operator
-get_ladder hallway
-2
-8 2
-1 0
-1
-0 5 -1 0
-1
-end_operator
-begin_operator
-get_out elecdoor
-2
-8 1
-14 0
-1
-0 15 -1 0
-1
-end_operator
-begin_operator
-goes_one_two basement hallway
-1
-6 0
-1
-0 8 0 2
-1
-end_operator
-begin_operator
-goes_two_three hallway elecdoor
-1
-9 0
-1
-0 8 2 1
-1
-end_operator
-begin_operator
-goes_zero_one start basement
+goes a cross
 0
 1
-0 8 3 0
-1
-end_operator
-begin_operator
-open_basement basement
-3
-8 0
-2 0
-3 0
-1
-0 6 -1 0
-1
-end_operator
-begin_operator
-open_roomtwo_window hallway
-3
-8 2
-5 0
-7 0
-1
-0 9 -1 0
-1
-end_operator
-begin_operator
-putout_fire hallway
+0 0 0 3
 2
-8 2
-4 0
-1
-0 7 -1 0
-1
 end_operator
 begin_operator
-release_emergency_handle hallway
+goes a e
+0
 1
-8 2
-1
-0 1 -1 0
-1
-end_operator
-begin_operator
-run_generator elecdoor
+0 0 0 5
 2
-8 1
-11 0
+end_operator
+begin_operator
+goes a j
+0
 1
-0 12 -1 0
+0 0 0 8
+7
+end_operator
+begin_operator
+goes b cross
+0
+1
+0 0 1 3
+2
+end_operator
+begin_operator
+goes b e
+0
+1
+0 0 1 5
+4
+end_operator
+begin_operator
+goes c b
+0
+1
+0 0 2 1
 1
 end_operator
 begin_operator
-use_electric_door elecdoor
+goes cross a
+0
+1
+0 0 3 0
+7
+end_operator
+begin_operator
+goes cross b
+0
+1
+0 0 3 1
+2
+end_operator
+begin_operator
+goes cross f
+0
+1
+0 0 3 6
+1
+end_operator
+begin_operator
+goes d cross
+0
+1
+0 0 4 3
+1
+end_operator
+begin_operator
+goes e a
+0
+1
+0 0 5 0
+7
+end_operator
+begin_operator
+goes e j
+0
+1
+0 0 5 8
+7
+end_operator
+begin_operator
+goes f goal
+0
+1
+0 0 6 7
+1
+end_operator
+begin_operator
+goes j goal
+0
+1
+0 0 8 7
 3
-13 0
-8 1
-12 0
-1
-0 14 -1 0
-1
 end_operator
 begin_operator
-use_key elecdoor
-2
-8 1
-10 0
+goes start c
+0
 1
-0 13 -1 0
+0 0 9 2
+5
+end_operator
+begin_operator
+goes start d
+0
 1
+0 0 9 4
+5
 end_operator
 0
