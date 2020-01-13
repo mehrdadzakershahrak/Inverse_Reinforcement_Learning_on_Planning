@@ -151,17 +151,11 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2):
     calculate_domain_dependent_features based on explanation
     return all values in an array
     '''
-    all_actions = ['A','B','C','D','E','F','J']
+    global all_actions
+    all_act = list(all_actions.keys())
     lav_dist = laven_dist(plan1, plan2) 
     plan_dist = plan_distance(plan1, plan2)
-    f1 = [0]*len(all_actions)
-    f2 = [0]*len(all_actions)
-    for a in range(len(all_actions)):
-        if a in state1:
-            f1[a]=1
-        if a in state2:
-            f2[a]=1
-    f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost)]#,*np.append(np.array(f1),np.array(f2)).tolist()]
+    f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost)]
     
     return f
 
@@ -234,15 +228,15 @@ def get_trajectories_from_traces(all_actions,trace_list,states_dict,initial_stat
     return trajectories
 
 if __name__ == "__main__":
-    TRACE_ROOT_PATH = '/headless/Desktop/Distance-Learning/Train/'
-    PROBLEM_ROOT_PATH = '/headless/Desktop/Distance-Learning/Archive/'
+    TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
+    PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
     problem_file_used = 0
     num_features = 3
 
-    cost_dict = {'A':5,'B':5,'C':2,'D':14,'E':4,'F':20,'J':4}
-    all_actions = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'J':6}
+    cost_dict = {'A':5,'B':5,'C':2,'D':4,'E':4,'F':5,'J':4,'H':3}
+    all_actions = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'J':6,'H':7}
 
     files_used = [1]
 
@@ -283,7 +277,7 @@ if __name__ == "__main__":
     print("\n Done "+str(problem_file_used))
     print("---------------------------------")
 
-    initial_states = [('C','B'),('C','E'),('B','J'),('A','E'),('D','J'),('D','A'),('F','A'),('C','J')]
+    #initial_states = [('C','B'),('C','E'),('B','J'),('A','E'),('D','J'),('D','A'),('F','A'),('C','J')]
 
     trajectories = get_trajectories_from_traces(all_actions, traces, states_dict,initial_states)
     print(trajectories)

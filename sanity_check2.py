@@ -22,7 +22,7 @@ def render_problem_template(D):
         if 'length' in og[i]:
                 for e in cost_dict.keys():
                     if D[e]==1:
-                        if str(e)+')' in og[i]:
+                        if ' '+str(e)+')' in og[i]:
                                 nums = re.findall(r'\d+',og[i])[0]
                                 cost=str(int(cost_dict[e]+int(nums)))
                                 og[i]=og[i].replace(nums,cost)
@@ -64,13 +64,11 @@ def get_plan(state,all_actions,problem_file_used):
     #print(plan)
     return plan, plan_cost
 
-PROBLEM_ROOT_PATH = '/headless/Desktop/Distance-Learning/Archive/'
+PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
 PLANNER_RELATIVE_PATH= '/FD/'
 
-cost_dict = {'A':5,'B':5,'C':2,'D':14,'E':4,'F':20,'J':4}
-all_actions = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'J':6}
-plan,cost = get_plan(('J','E','F'),all_actions,1)
+cost_dict = {'A':5,'B':5,'C':2,'D':4,'E':4,'F':5,'J':4,'H':3}
+all_actions = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'J':6,'H':7}
+plan,cost = get_plan(('A','C','B','D','E','F','H','J'),all_actions,1)
 print(plan)
 print(cost)
-
-
