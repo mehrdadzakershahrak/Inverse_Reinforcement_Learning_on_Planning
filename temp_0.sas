@@ -36,7 +36,7 @@ goes a crossa
 0
 1
 0 0 0 3
-0
+5
 end_operator
 begin_operator
 goes a crossb
@@ -50,7 +50,7 @@ goes b crossa
 0
 1
 0 0 1 3
-0
+5
 end_operator
 begin_operator
 goes b e
@@ -64,7 +64,7 @@ goes c b
 0
 1
 0 0 2 1
-5
+0
 end_operator
 begin_operator
 goes crossa a
@@ -78,7 +78,7 @@ goes crossa b
 0
 1
 0 0 3 1
-5
+0
 end_operator
 begin_operator
 goes crossa f
@@ -113,7 +113,7 @@ goes d crossa
 0
 1
 0 0 5 3
-0
+5
 end_operator
 begin_operator
 goes e crossb
@@ -148,13 +148,13 @@ goes start c
 0
 1
 0 0 11 2
-2
+0
 end_operator
 begin_operator
 goes start d
 0
 1
 0 0 11 5
-4
+0
 end_operator
 0

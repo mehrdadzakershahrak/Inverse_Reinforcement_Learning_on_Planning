@@ -9,7 +9,7 @@ Acknowledgement:
 
 By Yiren Lu (luyirenmax@gmail.com), May 2017
 '''
-import numpy as np
+import cupy as np
 import value_iteration
 from utils import *
 import sys
@@ -102,25 +102,9 @@ def compute_state_visition_freq(P_a, gamma, policy, deterministic=True):
           sum_a += mu[s2, s, t] * temp
           #print(s, s1, t, s2)
         mu[s, s1, t+1] = sum_a
+        print(mu)
   return np.sum(mu, 2)
 
-  # for s in range(N_STATES):
-  #   for s1 in range(N_STATES):
-  #     for t in range(T-1):
-  #       mu[s, s1, t+1] = sum ([ sum( [ mu[s2, s, t] * policy[s, a] * P_a[s, s1, a] for s2 in range(N_STATES)]) for a in range(N_ACTIONS)])
-  # print("mu")
-  # return np.sum(mu, 2)
-
-  # for s in range(N_STATES):
-  #   for s1 in range(N_STATES):
-  #     for t in range(T-1):
-  #       sum_a=0
-  #       for a in range(N_ACTIONS):
-  #         for s2 in range(N_STATES):
-  #           sum_a += mu[s2, s, t] * policy[s, a] * P_a[s, s1, a]
-  #           print(s, s1, t, a, s2)
-  #       mu[s, s1, t+1] = sum_a
-  # return np.sum(mu, 2)
 
 def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
   N_STATES, _, N_ACTIONS = np.shape(P_a)
@@ -138,11 +122,13 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
       try:
         feat_exp += feat_map[int(prev), int(nex), :]
       except IndexError:
+        print("Error")
         input()
   feat_exp = feat_exp/len(trajs)
 
   # training
   lr_const = lr/n_iters
+  print("Running...")
   for iteration in range(n_iters):
 
     # compute reward function
@@ -166,8 +152,8 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
     grad = feat_exp - val
     # update params
     theta += lr * grad
-    #print("******************************"+ str(iteration) +"******************************************")
-    #print(theta)
+    print("******************************"+ str(iteration) +"******************************************")
+    print(theta)
     #np.save("final_thetas", arr=theta)
     lr -= lr_const
     sys.stdout.write('\r' + "Progress:"+ str(iteration) + "/" +str(n_iters))#+" ,applicable states:"+str(theta))

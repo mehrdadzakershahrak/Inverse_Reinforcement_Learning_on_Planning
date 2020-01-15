@@ -5,7 +5,7 @@ N_s,N_a,_ = np.shape(P_a)
 P_a = P_a.reshape([N_s,N_s,N_a])
 feat_map = np.load("feat_map_final.npy")
 traj = np.load("trajectories.npy")
-#print(traj)
+print(traj)
 
 gamma = 0.9999999
 n_iters = 1000 #500/1000

@@ -11,7 +11,7 @@ import copy
 from utils import *
 
 
-def store_traces(trace_files,scenario_wise = False):
+def store_traces(trace_files, scenario_wise=False):
     '''
     input: tuple containing full path of demonstration files(Explanations)
     This function parses the explanation files and stores in the global tuple traces in the order of scenarios
@@ -25,14 +25,14 @@ def store_traces(trace_files,scenario_wise = False):
     num_scenarios = len(trace_files)
 
     for i in range(num_scenarios):
-        scenario_file = open(trace_files[i],'r')
+        scenario_file = open(trace_files[i], 'r')
         lines = scenario_file.readlines()
         scenario_file.close()
         trace = []
         if scenario_wise:
-            traces[i]=[]
+            traces[i] = []
         for line in lines:
-            if line[0]=='-':
+            if line[0] == '-':
                 if scenario_wise:
                     traces[i].append(trace)
                 else:
@@ -41,6 +41,7 @@ def store_traces(trace_files,scenario_wise = False):
             else:
                 trace.append(line.rstrip())
     return traces
+
 
 def render_problem_template(D):
     '''
@@ -68,7 +69,8 @@ def render_problem_template(D):
     problem_template.write(''.join(og))
     problem_template.close()
 
-def get_transition_matrix(all_actions,states_dict):
+
+def get_transition_matrix(all_actions, states_dict):
     '''
 
     :param actions: dict, all possible actions
@@ -82,12 +84,13 @@ def get_transition_matrix(all_actions,states_dict):
             try:
                 new_state = list(i)
                 new_state.append(a)
-                transition_matrix[states_dict[i], a, states_dict[tuple(sorted(new_state))]] = 1  # update transition matrix
-            except (IndexError,KeyError) as e:
+                transition_matrix[
+                    states_dict[i], a, states_dict[tuple(sorted(new_state))]] = 1  # update transition matrix
+            except (IndexError, KeyError) as e:
                 print("incorrect new state!")
                 print(new_state)
                 print(a)
-                #input()
+                # input()
 
     return transition_matrix
 
@@ -108,7 +111,7 @@ def get_state_map(actions):
     return states_dict, reverse_states_dict
 
 
-def get_plan(state,all_actions,problem_file_used):
+def get_plan(state, all_actions, problem_file_used):
     '''
     input: state: tuple of all actions taken till reaching state, all_actions: dict of all actions assigned to a number
     output: plan obtained by running planner on input files
@@ -122,7 +125,7 @@ def get_plan(state,all_actions,problem_file_used):
             subs_dict[action_template] = 1
         else:
             subs_dict[action_template] = 0
-    #print(subs_dict)
+    # print(subs_dict)
     render_problem_template(subs_dict)
 
     cmd = '.' + PLANNER_RELATIVE_PATH + 'fast-downward.py --sas-file temp_' + str(0) + '.sas --plan-file plan_' + str(
@@ -133,14 +136,14 @@ def get_plan(state,all_actions,problem_file_used):
     proc_plan = plan.split('\n')
     cost = [i for i, s in enumerate(proc_plan) if 'Plan cost:' in s]
     if 'Solution found!' not in proc_plan:
-        # print("No Solution")
+        print("No Solution")
         return [], 0
     plan = proc_plan[proc_plan.index('Solution found!') + 2: cost[0] - 1]
     plan_cost = float(proc_plan[cost[0]].split(' ')[-1])
     return plan, plan_cost
 
 
-def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2):
+def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
     '''
     input: 2 plans and an explanation
     output: feature vectors corresponding to the inputs
@@ -151,16 +154,27 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2):
     calculate_domain_dependent_features based on explanation
     return all values in an array
     '''
-    global all_actions
-    all_act = list(all_actions.keys())
-    lav_dist = laven_dist(plan1, plan2) 
+    global all_actions,cost_dict,distances
+    all_actions_list = ['A', 'B', 'C', 'D', 'E', 'F', 'J']
+
+    lav_dist = laven_dist(plan1, plan2)
     plan_dist = plan_distance(plan1, plan2)
-    f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost)]
-    
+
+    #magnitude of just explained
+    state1 = set(state1)
+    state2 = set(state2)
+    cost = 0
+    just_explained = list(state2.difference(state1))
+    for key in all_actions:
+        if all_actions[key] in just_explained:
+            cost = cost_dict[key]
+            dist = distances[key]
+
+    f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),cost,*dist]
     return f
 
 
-def get_feat_map_from_states(states_dict,feat_map,P_a,problem_file_used,all_actions):
+def get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_actions):
     '''
     OVERLOADED FUNCTION: for updating feat_map from applicable actions
     This function calculates the features corresponding to the states containined in states_dict
@@ -170,50 +184,53 @@ def get_feat_map_from_states(states_dict,feat_map,P_a,problem_file_used,all_acti
     :return: feature map containing features for all state-next_state pair.
     '''
     global state_pairs_found, num_features
-    total_number = 1.0*len(applicable_states)**2
+    total_number = 1.0 * len(applicable_states) ** 2
     count = 0.0
     c = 0
     for state in applicable_states:
         for next_state in applicable_states:
-            c+=1
+            c += 1
             s1 = set(sorted(state))
             s2 = set(sorted(next_state))
-            if s1.issubset(s2) and (len(s2)-len(s1)==1): #possible state-pair
-                if [s1,s2] not in state_pairs_found:
-                    state_pairs_found.append([state,next_state])
-                count+=1
+            if s1.issubset(s2) and (len(s2) - len(s1) == 1):  # possible state-pair
+                if [s1, s2] not in state_pairs_found:
+                    state_pairs_found.append([state, next_state])
+                count += 1
                 state_id = states_dict[state]
                 next_state_id = states_dict[next_state]
-                plan, plan_cost = get_plan(state,all_actions,problem_file_used)
-                feat_map[state_id, state_id] = np.zeros([1,num_features])# calculate_features(plan,plan,plan_cost,plan_cost)
+                plan, plan_cost = get_plan(state, all_actions, problem_file_used)
+                feat_map[state_id, state_id] = np.zeros(
+                    [1, num_features])  # calculate_features(plan,plan,plan_cost,plan_cost)
                 if any(P_a[state_id, :, next_state_id]) == 1:
-                    new_plan, new_plan_cost = get_plan(next_state,all_actions,problem_file_used)
-                    features = calculate_features(plan, new_plan, plan_cost, new_plan_cost,state,next_state)
+                    new_plan, new_plan_cost = get_plan(next_state, all_actions, problem_file_used)
+                    features = calculate_features(plan, new_plan, plan_cost, new_plan_cost, state, next_state)
                     feat_map[state_id, next_state_id] = features
 
-
-            sys.stdout.write('\r' + "Progress:"+ str(count) + "/" +str(total_number)+" ,applicable states:"+str(len(applicable_states)))
+            sys.stdout.write('\r' + "Progress:" + str(count) + "/" + str(total_number) + " ,applicable states:" + str(
+                len(applicable_states)))
             sys.stdout.flush()
 
     return feat_map
 
-def get_trajectories_from_traces(all_actions,trace_list,states_dict,initial_states):
+
+def get_trajectories_from_traces(all_actions, trace_list, states_dict):
     '''
     This function converts expert demos into state-next_state-trajectories of the shape: TXLx2 where T is the number of trajectories, L is the length of each trajectory
     and each item is a state-next_state (int) pair
     '''
-    num_traces = len(trace_list[0])*len(trace_list)
-    trajectories = np.zeros([num_traces, len(all_actions), 2])
+    #global num_traces
+    num_traces = len(trace_list[0]) * len(trace_list)
+    trajectories = np.zeros([num_traces, 5, 2])
     count = 0
-    for sc in range(len(trace_list)): #for each scenario
-        for i in range(len(trace_list[sc])): # for each trace of each scenario
+    for sc in range(len(trace_list)):  # for each scenario
+        for i in range(len(trace_list[sc])):  # for each trace of each scenario
             try:
-                state = list(initial_states[sc])
+                state = list(())
             except IndexError as e:
                 print("HERE")
                 input()
-            for j in range(len(trace_list[sc][i])): #for each explanation of each trace
-                action = all_actions['$' + str.upper(trace_list[sc][i][j])]                
+            for j in range(len(trace_list[sc][i])):  # for each explanation of each trace
+                action = all_actions[str.upper(trace_list[sc][i][j])]
                 try:
                     trajectories[count, j, 0] = states_dict[tuple(sorted(state))]
                 except KeyError:
@@ -223,43 +240,46 @@ def get_trajectories_from_traces(all_actions,trace_list,states_dict,initial_stat
                     trajectories[count, j, 1] = states_dict[tuple(sorted(state))]
                 except KeyError:
                     print([i, j])
-            count+=1
+            count += 1
 
     return trajectories
 
+
 if __name__ == "__main__":
-    TRACE_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Train/'
-    PROBLEM_ROOT_PATH = '/home/raoshashank/Desktop/Distance-learning-new/Distance-learning-new/repo/Distance-Learning/Archive/'
+    TRACE_ROOT_PATH = '/headless/Desktop/Distance-Learning/Train/'
+    PROBLEM_ROOT_PATH = '/headless/Desktop/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
+    num_traces = 50
     pp = pprint.PrettyPrinter(indent=4)
     problem_file_used = 0
-    num_features = 3
+    num_features = 6
 
-    cost_dict = {'A':5,'B':5,'C':2,'D':4,'E':4,'F':5,'J':4,'H':3}
-    all_actions = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'J':6,'H':7}
+    cost_dict = {'A': 5, 'B': 5, 'C': 2, 'D': 4, 'E': 4, 'F': 5, 'J': 4,'H':3}
+    all_actions = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'J': 6,'H':7}
+    distances = {'A':[6,3],'B':[4,0],'C':[3,0],'D':[3,2],'E':[7,1],'F':[4,3],'H':[7,3],'J':[6,4]}
 
-    files_used = [1]
+    files_used = [1,2,3,4,5,6,7,8,9,10]
 
-    with open(PROBLEM_ROOT_PATH+'problem.tpl.pddl', 'r') as f:
+    with open(PROBLEM_ROOT_PATH + 'problem.tpl.pddl', 'r') as f:
         og_template = f.readlines()
 
-    states_dict, reverse_states_dict = get_state_map(all_actions) #need all states
+    states_dict, reverse_states_dict = get_state_map(all_actions)  # need all states
     N = len(states_dict)
-    print("total number of states: "+str(N))   
+    print("total number of states: " + str(N))
     feat_map = np.zeros([N, N, num_features])
-    
+
     with open('states_dict.pickle', 'wb') as handle:
         pickle.dump(states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open('all_actions.pickle', 'wb') as handle:
         pickle.dump(all_actions, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
+
     P_a = get_transition_matrix(all_actions, states_dict)
 
     state_pairs_found = []
 
     ################# CHECK WITH NEW TRACES ########
     trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in files_used]
-    traces = store_traces(trace_files,scenario_wise=True)
+    traces = store_traces(trace_files, scenario_wise=True)
     ###############################################
 
     initial_states = []
@@ -268,47 +288,25 @@ if __name__ == "__main__":
 
     applicable_states = list(states_dict.keys())
     print("Calculating feature map")
-    feat_map = get_feat_map_from_states(states_dict,feat_map,P_a,problem_file_used,all_actions)
-    np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
-    
-    for i in range(np.shape(feat_map)[-1]):
-        feat_map[:,:,i]=normalize(feat_map[:,:,i])
+    trajectories = get_trajectories_from_traces(all_actions, traces, states_dict)
+    print(trajectories)
 
-    print("\n Done "+str(problem_file_used))
+    feat_map = get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_actions)
+
+    for i in range(np.shape(feat_map)[-1]):
+        feat_map[:, :, i] = normalize(feat_map[:, :, i])
+
+    print("\n Done " + str(problem_file_used))
     print("---------------------------------")
 
-    #initial_states = [('C','B'),('C','E'),('B','J'),('A','E'),('D','J'),('D','A'),('F','A'),('C','J')]
 
-    trajectories = get_trajectories_from_traces(all_actions, traces, states_dict,initial_states)
-    print(trajectories)
-    for i in range(np.shape(trajectories)[0]):
-        if list(trajectories[i,-1,:])==[0.0,0.0]:
-            trajectories[i,-1,:]=[31,31]
-        if list(trajectories[i,-2,:])==[0.0,0.0]:
-            trajectories[i,-2,:]=[31,31]
-
-
-    np.save("feat_map_final.npy",feat_map)
-    np.save("trajectories.npy",trajectories)
-    np.save("P_a.npy",P_a)
+    np.save("feat_map_final.npy", feat_map)
+    np.save("trajectories.npy", trajectories)
+    np.save("P_a.npy", P_a)
     for state in states_dict.keys():
         for next_state in states_dict.keys():
-            if [state,next_state] not in state_pairs_found:
+            if [state, next_state] not in state_pairs_found:
                 s1 = set(sorted(state))
                 s2 = set(sorted(next_state))
-                if s1.issubset(s2) and (len(s2)-len(s1) == 1): #possible state-pair
-                    print(str([state,next_state]))
-
-    initial_states = []
-    for problem_file_used in [0,1,2,3,4,5,6,7,8]:
-        updated_domain_template_lines,applicable_actions,difference_actions = \
-            update_domain_template_and_problem_file(og_template,problem_file_used,all_actions)
-        s = [] #initial state for the problem file used
-        for a in difference_actions:
-            s.append(all_actions[a])
-        initial_states.append(tuple(s))
-        print(initial_states)
-    
-    #print(len(state_pairs_found))
-    #print(trajectories)
-    #print(initial_states)
+                if s1.issubset(s2) and (len(s2) - len(s1) == 1):  # possible state-pair
+                    print(str([state, next_state]))
