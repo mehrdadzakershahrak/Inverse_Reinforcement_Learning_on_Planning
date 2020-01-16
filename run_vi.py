@@ -3,7 +3,8 @@ from value_iteration import value_iteration
 import pickle
 #thetas = np.array([15.86783182, 22.40267407, 12.1497361 , 50.92159157, 45.28974856,
 #       28.96656884])
-thetas = np.array([-10.0,-5,-5,0.0,0.0,1.0])
+#thetas = np.array([-10.0,-5,-5,0.0,0.0,1.0])
+thetas = np.load('final_thetas.npy')
 feat_map = np.load("feat_map_final.npy")
 #rewards = np.load("rewards.npy")
 rewards = np.dot(feat_map,thetas)

@@ -170,7 +170,7 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
             cost = cost_dict[key]
             dist = distances[key]
 
-    f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),cost,*dist]
+    f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost)]#,cost,*dist]
     return f
 
 
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     num_traces = 50
     pp = pprint.PrettyPrinter(indent=4)
     problem_file_used = 0
-    num_features = 6
+    num_features = 3
 
     cost_dict = {'A': 5, 'B': 5, 'C': 2, 'D': 4, 'E': 4, 'F': 5, 'J': 4,'H':3}
     all_actions = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'J': 6,'H':7}

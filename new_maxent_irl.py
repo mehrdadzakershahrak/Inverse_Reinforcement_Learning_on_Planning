@@ -130,7 +130,8 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
   lr_const = lr/n_iters
   print("Running...")
   for iteration in range(n_iters):
-
+    with open('iteration.txt','w') as f:
+       f.write(''.join(str(iteration)))
     # compute reward function
     rewards = normalize(np.dot(feat_map, theta))
     #print(rewards.shape)
@@ -138,7 +139,7 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
     # compute policy
     #_, policy = value_iteration.value_iteration(P_a, rewards, gamma, error=0.01, deterministic=False)
     policy = generate_stochastic_policy(P_a, rewards)
-    
+
     # compute state visition frequences
     svf = compute_state_visition_freq(P_a, gamma, policy, deterministic=False)
 

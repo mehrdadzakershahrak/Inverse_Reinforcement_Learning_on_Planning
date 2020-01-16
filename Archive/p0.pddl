@@ -4,7 +4,7 @@ start goal A B C D E F J H crossA crossB - cell
 )
 
 (:init
-(= (length start D) 0)
+(= (length start D) 4)
 (= (length start C) 0)
 (= (length C B) 0)
 (= (length D crossA) 5)
@@ -16,10 +16,10 @@ start goal A B C D E F J H crossA crossB - cell
 (= (length B E) 4)
 (= (length E crossB) 0)
 (= (length A crossB) 0)
-(= (length crossB H) 3)
+(= (length crossB H) 0)
 (= (length crossB A) 5)
 (= (length crossB E) 4)
-(= (length F J) 4)
+(= (length F J) 0)
 (= (length J goal) 0)
 (= (length H goal) 0)
 
