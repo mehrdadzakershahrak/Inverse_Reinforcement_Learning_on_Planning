@@ -31,7 +31,7 @@ def value_iteration(P_a, rewards, gamma, error=0.01, deterministic=True):
   """
   N_STATES, N_ACTIONS, _ = np.shape(P_a)
 
-  values = np.zeros([N_STATES])
+  values = np.zeros([N_STATES])*-999.0
   # print(N_STATES)
   # print(N_ACTIONS)
 
@@ -43,6 +43,9 @@ def value_iteration(P_a, rewards, gamma, error=0.01, deterministic=True):
     for s in range(N_STATES):
       v_s = []
       values[s] = max([sum([P_a[s, a, s1]*(rewards[s,s1] + gamma*values_tmp[s1]) for s1 in range(N_STATES)]) for a in range(N_ACTIONS)])
+      print("-----")
+      print(values)
+
 
     if max([abs(values[s] - values_tmp[s]) for s in range(N_STATES)]) < error:
       break

@@ -102,7 +102,7 @@ def compute_state_visition_freq(P_a, gamma, policy, deterministic=True):
           sum_a += mu[s2, s, t] * temp
           #print(s, s1, t, s2)
         mu[s, s1, t+1] = sum_a
-        print(mu)
+        #print(mu)
   return np.sum(mu, 2)
 
 
@@ -152,9 +152,10 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
     grad = feat_exp - val
     # update params
     theta += lr * grad
+
     print("******************************"+ str(iteration) +"******************************************")
     print(theta)
-    #np.save("final_thetas", arr=theta)
+    np.save("final_thetas", arr=theta)
     lr -= lr_const
     sys.stdout.write('\r' + "Progress:"+ str(iteration) + "/" +str(n_iters))#+" ,applicable states:"+str(theta))
     sys.stdout.flush()  

@@ -8,7 +8,7 @@ traj = np.load("trajectories.npy")
 print(traj)
 
 gamma = 0.9999999
-n_iters = 1000 #500/1000
+n_iters = 500 #500/1000
 lr = 0.05	
 rewards = np.zeros([3,1])
 #np.save("rewards.npy",rewards)
