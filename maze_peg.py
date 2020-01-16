@@ -246,8 +246,9 @@ def get_trajectories_from_traces(all_actions, trace_list, states_dict):
 
 
 if __name__ == "__main__":
-    TRACE_ROOT_PATH = '/Distance-Learning/Train/'
-    PROBLEM_ROOT_PATH = '/Distance-Learning/Archive/'
+    dir_path = os.path.dirname(os.path.realpath('__file__'))
+    TRACE_ROOT_PATH = dir_path+'/'+'Train/'
+    PROBLEM_ROOT_PATH = dir_path+'/'+'Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
     num_traces = 50
     pp = pprint.PrettyPrinter(indent=4)
