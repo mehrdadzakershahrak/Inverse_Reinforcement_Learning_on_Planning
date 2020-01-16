@@ -14,6 +14,8 @@ lr = 0.05
 rewards = np.zeros([3,1])
 #np.save("rewards.npy",rewards)
 start_time = time.clock()
+with open('time_taken.txt','w') as f:
+	f.write(''.join(str(time_taken)))
 rewards = maxent_irl(feat_map, P_a, gamma, traj, lr, n_iters)
 np.save("rewards.npy",rewards)
 #print(rewards)
