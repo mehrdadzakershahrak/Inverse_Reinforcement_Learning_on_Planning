@@ -170,7 +170,7 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
             cost = cost_dict[key]
             dist = distances[key]
 
-    f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost)]#,cost,*dist]
+    f = [lav_dist, plan_dist, abs(plan1_cost - plan2_cost),*dist]
     return f
 
 
@@ -253,13 +253,13 @@ if __name__ == "__main__":
     num_traces = 50
     pp = pprint.PrettyPrinter(indent=4)
     problem_file_used = 0
-    num_features = 3
+    num_features = 5
 
-    cost_dict = {'A': 5, 'B': 5, 'C': 2, 'D': 4, 'E': 4, 'F': 5, 'J': 4,'H':3}
-    all_actions = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'J': 6,'H':7}
-    distances = {'A':[6,3],'B':[4,0],'C':[3,0],'D':[3,2],'E':[7,1],'F':[4,3],'H':[7,3],'J':[6,4]}
+    cost_dict = {'A': 1000, 'B': 1000, 'C': 1000, 'D': 1000, 'E': 1000, 'F': 1000,'H':1000}
+    all_actions = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5,'H':6}
+    distances = {'A':[-1,0],'B':[8,2],'C':[5,1],'D':[3,4],'E':[1,1],'F':[7,1],'H':[3,6]}
 
-    files_used = [1,2,3,4,5,6,7,8,9,10]
+    files_used = [1]
 
     with open(PROBLEM_ROOT_PATH + 'problem.tpl.pddl', 'r') as f:
         og_template = f.readlines()

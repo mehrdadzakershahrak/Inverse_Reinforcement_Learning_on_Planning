@@ -9,7 +9,7 @@ Acknowledgement:
 
 By Yiren Lu (luyirenmax@gmail.com), May 2017
 '''
-import cupy as np
+import numpy as np
 import value_iteration
 from utils import *
 import sys
