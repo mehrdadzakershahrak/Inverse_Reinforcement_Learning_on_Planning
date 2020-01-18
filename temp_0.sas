@@ -89,7 +89,7 @@ goes start b
 0
 1
 0 0 8 1
-12
+1012
 end_operator
 begin_operator
 goes start c
@@ -110,20 +110,20 @@ goes start e
 0
 1
 0 0 8 4
-2
+1002
 end_operator
 begin_operator
 goes start f
 0
 1
 0 0 8 5
-8
+1008
 end_operator
 begin_operator
 goes start h
 0
 1
 0 0 8 7
-1021
+21
 end_operator
 0

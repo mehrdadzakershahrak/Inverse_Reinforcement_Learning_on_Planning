@@ -151,6 +151,7 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters):
     #fm = np.sum(fm, 1)
     val = fm.T.dot(sv).reshape((N_FEATURES,))
     grad = feat_exp - val
+  
     # update params
     theta += lr * grad
 

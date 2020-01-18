@@ -5,13 +5,13 @@ start goal A E C F B D H - cell
 
 (:init
 
-(= (length start E) 2)
+(= (length start E) 1002)
 (= (length start A) 1001)
 (= (length start C) 1006)
-(= (length start F) 8)
-(= (length start B) 12)
+(= (length start F) 1008)
+(= (length start B) 1012)
 (= (length start D) 19)
-(= (length start H) 1021)
+(= (length start H) 21)
 (= (length E goal) 3)
 (= (length A goal) 6)
 (= (length F goal) 7)
