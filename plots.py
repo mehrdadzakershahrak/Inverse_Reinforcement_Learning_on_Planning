@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-grads = np.load('grad_plot.npy')
+grads = np.load('theta_plot.npy')
 thetas = np.load('final_thetas.npy')
 #for i in range(np.shape(grads)[1]):
 #labels = ['lav','plan','cost','x','y']

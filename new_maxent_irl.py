@@ -149,14 +149,14 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters,scenarios):
     val = fm.T.dot(sv).reshape((N_FEATURES,))
     #print(val)
     grad = feat_exp - val
-    print(grad)
+    #print(grad)
     grad_plot[iteration, :] = grad
 
     # update params
     theta += lr * grad
     thetas_plot[iteration, :] = theta
     #print("******************************"+ str(iteration) +"******************************************")
-    #print(theta)
+    print(theta)
 
     np.save("theta_plot.npy", arr=thetas_plot)
     np.save('grad_plot.npy', grad_plot)
