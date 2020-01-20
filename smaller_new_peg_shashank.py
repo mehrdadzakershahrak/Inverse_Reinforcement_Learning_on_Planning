@@ -42,7 +42,7 @@ def store_traces(trace_files,scenario_wise = False):
                 trace.append(line.rstrip())
     return traces
 
-def render_problem_template(D):
+def render_domain_template(D):
     '''
     This function renders the domain (scavenger_edited.pddl) file from substitutions corresponding to dictionary
     input: dictionary of substitutions
@@ -105,13 +105,13 @@ def get_transition_matrix(all_actions,states_dict):
     :return: P_a transition probability matrix
     '''
     num_actions = len(all_actions)
-    transition_matrix = np.zeros((2 ** num_actions, num_actions, 2 ** num_actions))
+    transition_matrix = np.zeros((2 ** num_actions, 2 ** num_actions, num_actions))
     for i in states_dict.keys():  # for each state,
         for a in list(set(all_actions.values()) - set(i)):  # for each explanation not yet done..
             try:
                 new_state = list(i)
                 new_state.append(a)
-                transition_matrix[states_dict[i], a, states_dict[tuple(sorted(new_state))]] = 1  # update transition matrix
+                transition_matrix[states_dict[i], states_dict[tuple(sorted(new_state))],a] = 1  # update transition matrix
             except (IndexError,KeyError) as e:
                 print("incorrect new state!")
                 print(new_state)
@@ -154,7 +154,7 @@ def get_plan(state,all_actions,problem_file_used):
     render_domain_template(subs_dict)
 
     cmd = '.' + PLANNER_RELATIVE_PATH + 'fast-downward.py --sas-file temp_' + str(0) + '.sas --plan-file plan_' + str(
-        0) + ' ' + 'Archive/scavenger_edited.pddl' + ' ' + 'Archive/' + 'p' + str(
+        0) + ' ' + 'Archive/sardomain/scavenger_edited.pddl' + ' ' + 'Archive/sardomain/' + 'p' + str(
         problem_file_used) + '_edited.pddl' + ' --search "astar(lmcut())"'
     # print(cmd)
     plan = os.popen(cmd).read()
@@ -164,8 +164,8 @@ def get_plan(state,all_actions,problem_file_used):
         # print("No Solution")
         return [], 0
     plan = proc_plan[proc_plan.index('Solution found!') + 2: cost[0] - 1]
-    plan_cost = float(proc_plan[cost[0]].split(' ')[-1])
     #print(plan)
+    plan_cost = float(proc_plan[cost[0]].split(' ')[-1])
     return plan, plan_cost
 
 
@@ -191,7 +191,7 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2):
         if a in state2:
             f2[a]=1
     f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
-    
+    print(f)
     return f
 
 
@@ -221,7 +221,7 @@ def get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicab
                 next_state_id = states_dict[next_state]
                 plan, plan_cost = get_plan(state,all_actions,problem_file_used)
                 feat_map[state_id, state_id] = np.zeros([1,num_features])# calculate_features(plan,plan,plan_cost,plan_cost)
-                if any(P_a[state_id, :, next_state_id]) == 1:
+                if any(P_a[state_id, next_state_id,:]) == 1:
                     new_plan, new_plan_cost = get_plan(next_state,all_actions,problem_file_used)
                     features = calculate_features(plan, new_plan, plan_cost, new_plan_cost,state,next_state)
                     feat_map[state_id, next_state_id] = features
@@ -293,9 +293,9 @@ def update_domain_template_and_problem_file(og_domain_template,problem_file_used
         else:
             subs_dict[action] = '(' + str.lower(action[1:]) + ')'
 
-    print("Common predicates: " + str(common))
-    print("New action set:")
-    pp.pprint(applicable_actions.values())
+    #print("Common predicates: " + str(common))
+    #print("New action set:")
+    #pp.pprint(applicable_actions.values())
     domain_subs_dict = dict.fromkeys(all_actions.keys(), '')
 
     problem_file = open(PROBLEM_ROOT_PATH + "p" + str(problem_file_used) + "_edited.pddl", 'w')
@@ -310,23 +310,25 @@ def update_domain_template_and_problem_file(og_domain_template,problem_file_used
     domain_template = open(PROBLEM_ROOT_PATH + 'scavenger_edited.tpl.pddl', 'w')
     domain_template.write(''.join(domain))
     domain_template.close()
-    print("Updated domain template and problem file")
+    #print("Updated domain template and problem file")
 
     return domain, applicable_actions,common
 
 
 if __name__ == "__main__":
-    TRACE_ROOT_PATH = '/headless/Desktop/Distance-Learning/Train/'
-    PROBLEM_ROOT_PATH = '/headless/Desktop/Distance-Learning/Archive/'
+
+    dir_path = os.path.dirname(os.path.realpath('__file__'))
+    TRACE_ROOT_PATH = dir_path+'/'+'Train/old_sar/'
+    PROBLEM_ROOT_PATH = dir_path+'/'+'Archive/sardomain/'
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
     
-    ------num_features = 13-------
+    num_features = 13
 
 
     files_used = [1,2,3,4,5,6,7,8]
 
-    with open(PROBLEM_ROOT_PATH+'scavengere.tpl.pddl', 'r') as f:
+    with open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl', 'r') as f:
         og_template = f.readlines()
 
     all_actions = get_actions(og_template) #dict: find all possible actions in original domain, actions are now all_actions.values()
@@ -366,15 +368,10 @@ if __name__ == "__main__":
 
     print("Calculating feature map")
     feat_map = get_feat_map_from_states(states_dict,feat_map,applicable_states,P_a,applicable_actions,problem_file_used,all_actions)
-    np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
+    #np.save("feat_map_problem_"+str(problem_file_used)+str(".npy"),feat_map)
     
     for i in range(np.shape(feat_map)[-1]):
         feat_map[:,:,i]=normalize(feat_map[:,:,i])
-
-
-
-    print("\n Done "+str(problem_file_used))
-    print("---------------------------------")
 
 
     for problem_file_used in files_used:
@@ -387,17 +384,17 @@ if __name__ == "__main__":
         print(initial_states)
         
     trajectories = get_trajectories_from_traces(all_actions, traces, states_dict,initial_states)
-    print(trajectories)
     for i in range(np.shape(trajectories)[0]):
         if list(trajectories[i,-1,:])==[0.0,0.0]:
             trajectories[i,-1,:]=[31,31]
         if list(trajectories[i,-2,:])==[0.0,0.0]:
             trajectories[i,-2,:]=[31,31]
-
+    print(trajectories)
 
     np.save("feat_map_final.npy",feat_map)
     np.save("trajectories.npy",trajectories)
     np.save("P_a.npy",P_a)
+
     for state in states_dict.keys():
         for next_state in states_dict.keys():
             if [state,next_state] not in state_pairs_found:
@@ -414,7 +411,7 @@ if __name__ == "__main__":
         for a in difference_actions:
             s.append(all_actions[a])
         initial_states.append(tuple(s))
-        print(initial_states)
+        #print(initial_states)
     
     #print(len(state_pairs_found))
     #print(trajectories)
