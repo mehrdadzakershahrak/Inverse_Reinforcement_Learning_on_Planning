@@ -163,11 +163,27 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
     state2 = set(state2)
     cost = 0
     just_explained = list(state2.difference(state1))
-    for key in all_actions:
-        if all_actions[key] in just_explained:
-            dist = distances[key]
+    distx = []
+    disty = []
+    for a in state1:
+        distx.append(distances[a][0])
+        disty.append(distances[a][1])
+    if len(state1)==0:
+        distx=[0]
+        disty=[0]
+    just_explained_dist = distances[tuple(just_explained)[0]]
+    try:
+        d1 = just_explained_dist[0]-min(distx)
+        d2 = just_explained_dist[0]-max(distx)
+        d3 = just_explained_dist[1]-min(disty)
+        d4 = just_explained_dist[1]-max(disty)
+    except ValueError:
+        input()
 
-    f = [plan_dist, abs(plan1_cost - plan2_cost),dist[0],dist[1]]
+    dist = distances[tuple(just_explained)[0]]
+
+
+    f = [plan_dist, (abs(plan1_cost - plan2_cost))**2,d1,d2,d3,d4]
     print(f)
     return f
 
@@ -243,12 +259,12 @@ if __name__ == "__main__":
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
     problem_file_used = 0
-    num_features = 4
+    num_features = 6
 
     #cost_dict = {'A': 1000, 'B': 1000, 'C': 1000, 'D': 1000, 'E': 1000, 'F': 1000}
     all_actions = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5}
     inv_all_actions = {0:'A',1:'B',2:'C',3:'D',4:'E',5:'F'}
-    distances = {'A':[-1,0],'B':[8,2],'C':[5,1],'D':[3,4],'E':[1,1],'F':[7,1]}
+    distances = {0:[-1,0],1:[8,2],2:[5,1],3:[3,4],4:[1,1],5:[7,1]}
     scenarios = [[3],[1],[1,3],[3,5],[1,2]]
     files_used = [1,2,3,4,5]
 

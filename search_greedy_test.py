@@ -9,17 +9,14 @@ def findnode(q,item):
             return i
     return -1
 
-thetas = np.load('final_thetas.npy')
-feat_map = np.load("feat_map_final.npy")
-rewards = np.dot(feat_map,thetas)
+
+rewards = np.load("rewards.npy")
 P_a = np.load("P_a.npy")
 with open('states_dict.pickle','rb') as f:
     states_dict = pickle.load(f)
 
-
-
-
 scenarios = [[3],[1],[1,3],[3,5],[1,2]]
+#scenarios = [[5],[1,5],[2,3]]
 all_actions = [0,1,2,3,4,5]
 frontier = []
 explored = set()
@@ -29,7 +26,7 @@ for sc in range(len(scenarios)):
     frontier = []
     explored = set()
     counter = 0
-    item = [-np.inf, counter, [], root]
+    item = [-10000, counter, [], root]
     heapq.heappush(frontier, item)
     counter += 1
     goal_state = states_dict[tuple(sorted(action_list))]
@@ -41,9 +38,10 @@ for sc in range(len(scenarios)):
         node = item.pop()
         node_actions = item.pop()
         node_cum_cost = item.pop(0)
-
+        print(node_cum_cost)
         if node == goal_state:
             print(node_actions)
+            break
 
         explored.add(str(node))
         sucs = []

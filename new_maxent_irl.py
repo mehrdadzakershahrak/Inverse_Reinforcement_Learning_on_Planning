@@ -84,6 +84,9 @@ def compute_state_visition_freq(P_a, gamma, policy, scenarios):
 
   for traj in trajs:
     mu[traj[0][0], traj[0][1], 0] += 1
+  #for traj in trajs:
+  #  for t in traj:
+  #    mu[t[0],t[1],0]+=1
 
   mu[:,:,0] = mu[:,:,0]/len(trajs)
 
@@ -107,6 +110,9 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters,scenarios):
   N_FEATURES = feat_map.shape[2]
   theta = np.random.uniform(size=(N_FEATURES,))
 
+  grad_plot = np.zeros([n_iters, N_FEATURES])
+  thetas_plot = np.zeros([n_iters, N_FEATURES])
+
   feat_exp = np.zeros([N_FEATURES])
   for sc in scenarios:
     feat_exp_sc = np.zeros([N_FEATURES])
@@ -127,8 +133,7 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters,scenarios):
   for iteration in range(n_iters):
 
     rewards_new = normalize(np.dot(feat_map, theta))
-    print("--")
-    print(np.sum(abs(rewards-rewards_new)))
+    #print(np.sum(abs(rewards-rewards_new)))
     rewards =rewards_new.copy()
 
 
@@ -140,23 +145,28 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters,scenarios):
     svf = compute_state_visition_freq(P_a, gamma, policy,scenarios)
     fm = feat_map.reshape((N_STATES*N_STATES, N_FEATURES))
     sv = svf.reshape(N_STATES*N_STATES, 1)
-    print(sv[0:20])
+    #print(sv[0:20])
     val = fm.T.dot(sv).reshape((N_FEATURES,))
     #print(val)
     grad = feat_exp - val
-    #print(val)
-  
+    print(grad)
+    grad_plot[iteration, :] = grad
+
     # update params
     theta += lr * grad
-
+    thetas_plot[iteration, :] = theta
     #print("******************************"+ str(iteration) +"******************************************")
     #print(theta)
-    np.save("final_thetas", arr=theta)
+
+    np.save("theta_plot.npy", arr=thetas_plot)
+    np.save('grad_plot.npy', grad_plot)
+
     lr -= lr_const
     sys.stdout.write('\r' + "Progress:"+ str(iteration) + "/" +str(n_iters))#+" ,applicable states:"+str(theta))
     sys.stdout.flush()  
   print(theta)
   rewards = np.dot(feat_map, theta)
+  np.save('final_thetas.npy',theta)
 
   return normalize(rewards)
 
