@@ -2,7 +2,7 @@ import numpy as np
 import heapq
 import pickle
 from utils import *
-
+import copy
 
 def findnode(q,item):
     for i in range(len(q)):
@@ -11,10 +11,8 @@ def findnode(q,item):
     return -1
 
 
-#correct_data_thetas = [ 153.30416175 ,  -3.64059462,  121.32357383,  128.86628806,  131.90631484, 141.37356883]
-correct_data_thetas = [152.572, -3.398, 121.587, 128.642, 131.703, 142.071]
-#data_with_AE_thetas = [ 128.51328705,   -3.21292958,  112.95632114,  120.41423284, 121.97755125,  132.81699635]
-#Akshay_thetas = [49.831, -20.515, 2.005, 68.373, 22.787, 75.546]
+#weights from the IRL
+correct_data_thetas = [152.572, -3.398, 121.587, 128.642, 131.703, 142.071] 
 feat_map = np.load('feat_map_final.npy')
 
 thetas = correct_data_thetas.copy()
@@ -28,49 +26,10 @@ train_scenarios = [[3],[1],[1,3],[3,5],[1,2]]
 test_scenarios = [[5],[1,5],[2,3]]
 inv_actions_dict = {0:'A', 1:'B', 2:'C',3:'D', 4:'E', 5:'F'}
 actions_dict = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5}
-
 all_actions = [0,1,2,3,4,5]
 
-
-sequence = ['E','A','C','B']
-print("My order")
-init_state = []
-state = init_state.copy()
-reward = 0.0
-r = []
-s = []
-for i in range(len(sequence)):
-    action = actions_dict[sequence[i]]
-    next_state = sorted(state+[action])
-    reward+=rewards[states_dict[tuple(sorted(state))],states_dict[tuple(sorted(next_state))]]
-    r.append(rewards[states_dict[tuple(sorted(state))],states_dict[tuple(sorted(next_state))]])
-    s.append(states_dict[tuple(sorted(next_state))])
-    #print(next_state)
-    state = next_state
-print(reward)
-ss = [4, 0, 1, 2]
-sequence = []
-reward = 0.0
-for s in ss:
-    sequence.append(inv_actions_dict[s])
-
-init_state = []
-state = init_state.copy()
-reward = 0.0
-r = []
-s = []
-for i in range(len(sequence)):
-    action = actions_dict[sequence[i]]
-    next_state = sorted(state+[action])
-    reward+=rewards[states_dict[tuple(sorted(state))],states_dict[tuple(sorted(next_state))]]
-    r.append(rewards[states_dict[tuple(sorted(state))],states_dict[tuple(sorted(next_state))]])
-    s.append(states_dict[tuple(sorted(next_state))])
-    #print(next_state)
-    state = next_state
-print(reward)
-
-
-scenarios = test_scenarios.copy()
+#perform Uniform Cost Search on the testing scenarios
+scenarios = train_scenarios.copy()
 for sc in range(len(scenarios)):
     frontier = []
     item = []

@@ -40,10 +40,3 @@ def plan_distance(plan_a, plan_b):
     plan_b = set(plan_b)
     return 1.0-(len(plan_a.intersection(plan_b))/len(plan_a.union(plan_b)))
 
-
-'''
-Domain Dependent Features:
-    Just Explained:
-    Already Known:
-    Group binary:
-'''

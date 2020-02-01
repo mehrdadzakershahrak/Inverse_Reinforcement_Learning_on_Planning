@@ -45,11 +45,8 @@ def store_traces(trace_files, scenario_wise=False):
 
 def render_problem_template(D):
     '''
-    This function renders the domain (scavenger_edited.pddl) file from substitutions corresponding to dictionary
+    This function renders the domain (problem.tpl.pddl) file from substitutions corresponding to dictionary
     input: dictionary of substitutions
-    sample dict: {A:0,B:1,C:0}
-    active explanations have value 1 and others have value 0
-    when any explanation is done, add the cost to every line which ends in that cell
     '''
     global PROBLEM_ROOT_PATH, cost_dict,all_actions
 
@@ -61,11 +58,7 @@ def render_problem_template(D):
             for e in all_actions.keys():
                 if D[e] == 1:
                     if str(e) + ')' in og[i]:
-                        #print(e + 'in state, removing' + og[i])
-                        #nums = re.findall(r'\d+', og[i])[0]
-                        #cost = str(int(cost_dict[e] + int(nums)))
-                        #og[i] = og[i].replace(nums, cost)
-                        og[i] = ';'+og[i]
+                        og[i] = ';'+og[i]       #if an explanation is present, block the path from start to the goal.
 
     problem_template = open(PROBLEM_ROOT_PATH + 'p0.pddl', 'w')
     problem_template.write(''.join(og))
@@ -75,9 +68,9 @@ def render_problem_template(D):
 def get_transition_matrix(all_actions, states_dict):
     '''
 
-    :param actions: dict, all possible actions
+    :param all_actions: dict, all possible actions
     :param states_dict: states to number mapping
-    :return: P_a transition probability matrix
+    :return:  transition probability matrix
     '''
     num_actions = len(all_actions)
     transition_matrix = np.zeros((2 ** num_actions, 2 ** num_actions, num_actions))
@@ -97,11 +90,12 @@ def get_transition_matrix(all_actions, states_dict):
 
 
 def powerset(iterable):
+    #calculate powerset for a given iterable
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
-
 def get_state_map(actions):
+    #calculate state map given the dictionary of all actions
     states = list(powerset(sorted(actions.values())))
     states_dict = {}
     reverse_states_dict = {}
@@ -129,6 +123,7 @@ def get_plan(state, all_actions, problem_file_used):
             subs_dict[action_template] = 0
     render_problem_template(subs_dict)
 
+    #calculate plan and plan-cost usinf fast-downward planner
     cmd = '.' + PLANNER_RELATIVE_PATH + 'fast-downward.py --sas-file temp_' + str(0) + '.sas --plan-file plan_' + str(
         0) + ' ' + 'Archive/domain.pddl' + ' ' + 'Archive/' + 'p' + str(
         problem_file_used) + '.pddl' + ' --search "astar(lmcut())"'
@@ -140,7 +135,7 @@ def get_plan(state, all_actions, problem_file_used):
         print("No Solution")
         return [], 0
     plan = proc_plan[proc_plan.index('Solution found!') + 2: cost[0] - 1]
-    #print(plan)
+ 
     plan_cost = float(proc_plan[cost[0]].split(' ')[-1])
     return plan, plan_cost
 
@@ -150,11 +145,6 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
     input: 2 plans and an explanation
     output: feature vectors corresponding to the inputs
 
-    calculate_lavenstein_distance
-    calculate_plan_cost
-    calculate_plan_distance
-    calculate_domain_dependent_features based on explanation
-    return all values in an array
     '''
     global all_actions,distances
     lav_dist = laven_dist(plan1, plan2)
@@ -172,6 +162,8 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
         distx=[0]
         disty=[0]
     just_explained_dist = distances[tuple(just_explained)[0]]
+    
+    #domain-dependent features
     try:
         d1 = just_explained_dist[0]-min(distx)
         d2 = just_explained_dist[0]-max(distx)
@@ -190,12 +182,15 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
 
 def get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_actions):
     '''
-    OVERLOADED FUNCTION: for updating feat_map from applicable actions
+    for updating feat_map from applicable actions
     This function calculates the features corresponding to the states containined in states_dict
-    :param actions:     tuple containing all possible actions (numeric)
-    :param num_features: number of features
-    :param transition_P: Transition matrix of the form (s,a,s') [NxAxN]
-    :return: feature map containing features for all state-next_state pair.
+    :param: states_dict: state dictionary
+    :param: feat_map: initial feature map 
+    :param: P_a: transition matrix
+    :param: problem_file_used: the problem file used for calculating the plans for features
+    :param: all_actions: dictionary for all actions
+
+    :return: feat_map: Final calculate feature map 
     '''
     global state_pairs_found, num_features,inv_all_actions
     total_number = 1.0*len(applicable_states)**2
@@ -206,16 +201,15 @@ def get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_
             c+=1
             s1 = set(sorted(state))
             s2 = set(sorted(next_state))
-            if s1.issubset(s2) and (len(s2)-len(s1)==1): #possible state-pair
+            if s1.issubset(s2) and (len(s2)-len(s1)==1): # for every possible state-pair
                 if [s1, s2] not in state_pairs_found:
                     state_pairs_found.append([state, next_state])
                 count+=1
                 state_id = states_dict[state]
                 next_state_id = states_dict[next_state]
-                plan, plan_cost = get_plan(state, all_actions, problem_file_used)
-                feat_map[state_id, state_id] = np.zeros(
-                    [1, num_features])
-                if any(P_a[state_id,next_state_id,:]) == 1:
+                plan, plan_cost = get_plan(state, all_actions, problem_file_used) #plan for same-state pair
+                feat_map[state_id, state_id] = np.zeros([1, num_features])
+                if any(P_a[state_id,next_state_id,:]) == 1: #possible next state
                     new_plan, new_plan_cost = get_plan(next_state, all_actions, problem_file_used)
                     features = calculate_features(plan, new_plan, plan_cost, new_plan_cost, state, next_state)
                     feat_map[state_id, next_state_id] = features
@@ -261,65 +255,48 @@ if __name__ == "__main__":
     problem_file_used = 0
     num_features = 6
 
-    #cost_dict = {'A': 1000, 'B': 1000, 'C': 1000, 'D': 1000, 'E': 1000, 'F': 1000}
     all_actions = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5}
-    inv_all_actions = {0:'A',1:'B',2:'C',3:'D',4:'E',5:'F'}
-    distances = {0:[-1,0],1:[8,2],2:[5,1],3:[3,4],4:[1,1],5:[7,1]}
-    scenarios = [[3],[1],[1,3],[3,5],[1,2]]
-    files_used = [1,2,3,4,5]
+    inv_all_actions = {0:'A',1:'B',2:'C',3:'D',4:'E',5:'F'} 
+    distances = {0:[-1,0],1:[8,2],2:[5,1],3:[3,4],4:[1,1],5:[7,1]} #(x,y) coordinates of the danger zones
+    scenarios = [[3],[1],[1,3],[3,5],[1,2]] 
+    files_used = [1,2,3,4,5] #Files used for training
 
+    #read the original problem file 
     with open(PROBLEM_ROOT_PATH + 'problem.tpl.pddl', 'r') as f:
         og_template = f.readlines()
 
-    states_dict, reverse_states_dict = get_state_map(all_actions)  # need all states
+    
+    states_dict, reverse_states_dict = get_state_map(all_actions)  # Generate state maps for all states
     N = len(states_dict)
     print("total number of states: " + str(N))
     feat_map = np.zeros([N, N, num_features])
 
-    with open('states_dict.pickle', 'wb') as handle:
+    with open('states_dict.pickle', 'wb') as handle:    
         pickle.dump(states_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open('all_actions.pickle', 'wb') as handle:
         pickle.dump(all_actions, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-
-
-    P_a = get_transition_matrix(all_actions, states_dict)
+    P_a = get_transition_matrix(all_actions, states_dict) #Generate transition matrix 
 
     state_pairs_found = []
 
     trace_files = [TRACE_ROOT_PATH + 'p' + str(i) + '.txt' for i in files_used]
-    traces = store_traces(trace_files, scenario_wise=True)
+    traces = store_traces(trace_files, scenario_wise=True)      #store traces in dictionary
     print("All Actions:")
     pp.pprint(all_actions)
 
     applicable_states = list(states_dict.keys())
     trajectories = get_trajectories_from_traces(all_actions, traces, states_dict,scenarios)
 
-    # for i in range(np.shape(trajectories)[0]):
-    #     if list(trajectories[i, -1, :]) == [0.0, 0.0]:
-    #         trajectories[i, -1, :] = [63, 63]
-    #     if list(trajectories[i, -2, :]) == [0.0, 0.0]:
-    #         trajectories[i, -2, :] = [63, 63]
-    print(trajectories)
-
-    #for traj in trajectories:
-    #    for prev,nex in traj:
-    #        prev = set(reverse_states_dict[prev])
-    #        nex = set(reverse_states_dict[nex])
-    #        if len(nex)-len(prev)!=1 and (prev!=nex):
-    #            print("Error")
-    #        else:
-    #            print(inv_all_actions[tuple(nex.difference(prev))[0]])
-    #    print('-----')
-
-
-
-    #input()
+    print(trajectories) 
 
     print("Calculating feature map")
+
+    #Calculate the feature map for all state pairs and store in a map
     feat_map = get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_actions)
 
+    #Normalize across each feature
     for i in range(np.shape(feat_map)[-1]):
         feat_map[:, :, i]= normalize(feat_map[:, :, i])
 
@@ -347,3 +324,4 @@ if __name__ == "__main__":
                     print("False")
 
     print(count)
+ 

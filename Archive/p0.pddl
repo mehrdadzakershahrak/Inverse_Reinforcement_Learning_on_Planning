@@ -24,9 +24,9 @@ start goal A E C F B D H - cell
 
 ;(can_go start E)
 ;(can_go start A)
-;(can_go start C)
-;(can_go start F) 
-;(can_go start B)
+(can_go start C)
+(can_go start F) 
+(can_go start B)
 (can_go start D)
 (can_go start H) 
 (can_go E goal)
