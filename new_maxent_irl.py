@@ -8,7 +8,7 @@ Acknowledgement:
 By Yiren Lu (luyirenmax@gmail.com), May 2017
 '''
 import numpy as np
-import value_iteration
+#import value_iteration
 from utils import *
 import sys
 
@@ -168,6 +168,6 @@ def maxent_irl(feat_map, P_a, gamma, trajs, lr, n_iters,scenarios):
   rewards = np.dot(feat_map, theta)
   np.save('final_thetas.npy',theta)
 
-  return normalize(rewards)
+  return theta,normalize(rewards)
 
 

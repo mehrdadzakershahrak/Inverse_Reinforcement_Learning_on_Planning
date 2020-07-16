@@ -1,3 +1,5 @@
+import sys
+sys.path.append('/home/raoshashank/Distance-Learning/')
 import numpy as np
 import pprint
 import re
@@ -6,7 +8,6 @@ from itertools import chain, combinations
 from feature_functions import laven_dist, plan_distance
 import pickle
 from os import path
-import sys
 import copy
 from utils import *
 
@@ -142,7 +143,7 @@ def get_plan(state,all_actions,problem_file_used):
     input: state: tuple of all actions taken till reaching state, all_actions: dict of all actions assigned to a number
     output: plan obtained by running planner on input files
     '''
-    global PLANNER_RELATIVE_PATH
+    global PLANNER_RELATIVE_PATH,PROBLEM_ROOT_PATH
 
     # generate dictionary corresponding to substitutions and render domain template to get plan
     subs_dict = {}
@@ -154,7 +155,7 @@ def get_plan(state,all_actions,problem_file_used):
     render_domain_template(subs_dict)
 
     cmd = '.' + PLANNER_RELATIVE_PATH + 'fast-downward.py --sas-file temp_' + str(0) + '.sas --plan-file plan_' + str(
-        0) + ' ' + 'Archive/sardomain/scavenger_edited.pddl' + ' ' + 'Archive/sardomain/' + 'p' + str(
+        0) + ' ' + PROBLEM_ROOT_PATH+'/scavenger_edited.pddl' + ' ' + PROBLEM_ROOT_PATH + 'p' + str(
         problem_file_used) + '_edited.pddl' + ' --search "astar(lmcut())"'
     # print(cmd)
     plan = os.popen(cmd).read()
@@ -190,6 +191,11 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2):
             f1[a]=1
         if a in state2:
             f2[a]=1
+    '''
+    add new features
+    '''
+
+
     f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
     print(f)
     return f
@@ -318,15 +324,16 @@ def update_domain_template_and_problem_file(og_domain_template,problem_file_used
 if __name__ == "__main__":
 
     dir_path = os.path.dirname(os.path.realpath('__file__'))
-    TRACE_ROOT_PATH = dir_path+'/'+'Train/old_sar/'
-    PROBLEM_ROOT_PATH = dir_path+'/'+'Archive/sardomain/'
+    TRACE_ROOT_PATH = dir_path+'/Train/old_sar/'
+    PROBLEM_ROOT_PATH = dir_path+'/Archive/old_domain_files/'
     PLANNER_RELATIVE_PATH = '/FD/'
+    NEW_OLD_FILES_PATH = dir_path+'/old_domain_files/'
     pp = pprint.PrettyPrinter(indent=4)
     
     num_features = 13
 
 
-    files_used = [1,2,3,4,5,6,7,8]
+    files_used = [0,1,2,3,4,5,6,7,8]
 
     with open(PROBLEM_ROOT_PATH+'scavenger.tpl.pddl', 'r') as f:
         og_template = f.readlines()
@@ -391,9 +398,9 @@ if __name__ == "__main__":
             trajectories[i,-2,:]=[31,31]
     print(trajectories)
 
-    np.save("feat_map_final.npy",feat_map)
-    np.save("trajectories.npy",trajectories)
-    np.save("P_a.npy",P_a)
+    np.save(NEW_OLD_FILES_PATH+"feat_map_final.npy",feat_map)
+    np.save(NEW_OLD_FILES_PATH+"trajectories.npy",trajectories)
+    np.save(NEW_OLD_FILES_PATH+"P_a.npy",P_a)
 
     for state in states_dict.keys():
         for next_state in states_dict.keys():

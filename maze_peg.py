@@ -3,13 +3,14 @@ import pprint
 import re
 import os
 from itertools import chain, combinations
-from feature_functions import laven_dist, plan_distance
+from feature_functions import laven_dist
+from feature_functions import action_distance as plan_distance
 import pickle
 from os import path
 import sys
 import copy
 from utils import *
-
+from new_maxent_irl import maxent_irl
 
 def store_traces(trace_files, scenario_wise=False):
     '''
@@ -42,7 +43,6 @@ def store_traces(trace_files, scenario_wise=False):
                 trace.append(line.rstrip())
     return traces
 
-
 def render_problem_template(D):
     '''
     This function renders the domain (problem.tpl.pddl) file from substitutions corresponding to dictionary
@@ -53,6 +53,8 @@ def render_problem_template(D):
     with open(PROBLEM_ROOT_PATH + 'problem.tpl.pddl', 'r') as f:
         og = f.readlines()
 
+
+    #IPython.embed()
     for i in range(len(og)):
         if 'can_go' in og[i]:
             for e in all_actions.keys():
@@ -63,7 +65,6 @@ def render_problem_template(D):
     problem_template = open(PROBLEM_ROOT_PATH + 'p0.pddl', 'w')
     problem_template.write(''.join(og))
     problem_template.close()
-
 
 def get_transition_matrix(all_actions, states_dict):
     '''
@@ -88,7 +89,6 @@ def get_transition_matrix(all_actions, states_dict):
 
     return transition_matrix
 
-
 def powerset(iterable):
     #calculate powerset for a given iterable
     s = list(iterable)
@@ -105,14 +105,12 @@ def get_state_map(actions):
 
     return states_dict, reverse_states_dict
 
-
 def get_plan(state, all_actions, problem_file_used):
     '''
     input: state: tuple of all actions taken till reaching state, all_actions: dict of all actions assigned to a number
     output: plan obtained by running planner on input files
     '''
-    global PLANNER_RELATIVE_PATH
-
+    global PLANNER_RELATIVE_PATH,plan_switch
     # generate dictionary corresponding to substitutions and render domain template to get plan
     subs_dict = {}
     for action_template in all_actions.keys():
@@ -123,7 +121,7 @@ def get_plan(state, all_actions, problem_file_used):
             subs_dict[action_template] = 0
     render_problem_template(subs_dict)
 
-    #calculate plan and plan-cost usinf fast-downward planner
+    #calculate plan and plan-cost using fast-downward planner
     cmd = '.' + PLANNER_RELATIVE_PATH + 'fast-downward.py --sas-file temp_' + str(0) + '.sas --plan-file plan_' + str(
         0) + ' ' + 'Archive/domain.pddl' + ' ' + 'Archive/' + 'p' + str(
         problem_file_used) + '.pddl' + ' --search "astar(lmcut())"'
@@ -135,10 +133,10 @@ def get_plan(state, all_actions, problem_file_used):
         print("No Solution")
         return [], 0
     plan = proc_plan[proc_plan.index('Solution found!') + 2: cost[0] - 1]
- 
+    plan = plan_switch[plan[0]]
     plan_cost = float(proc_plan[cost[0]].split(' ')[-1])
+    #   print(plan)
     return plan, plan_cost
-
 
 def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
     '''
@@ -173,12 +171,15 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost, state1, state2):
         input()
 
     dist = distances[tuple(just_explained)[0]]
+    laven = laven_dist(plan1,plan2)
 
-
-    f = [plan_dist, (abs(plan1_cost - plan2_cost))**2,d1,d2,d3,d4]
+    f = [laven, plan_dist, (abs(plan1_cost - plan2_cost))**2,d1,d2,d3,d4]
+    #print('\n')
+    #print(laven)
+    #print(plan_dist)
+    #print('------')
     print(f)
     return f
-
 
 def get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_actions):
     '''
@@ -196,6 +197,7 @@ def get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_
     total_number = 1.0*len(applicable_states)**2
     count = 0.0
     c = 0
+
     for state in states_dict:
         for next_state in states_dict:
             c+=1
@@ -207,6 +209,7 @@ def get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_
                 count+=1
                 state_id = states_dict[state]
                 next_state_id = states_dict[next_state]
+                #IPython.embed()
                 plan, plan_cost = get_plan(state, all_actions, problem_file_used) #plan for same-state pair
                 feat_map[state_id, state_id] = np.zeros([1, num_features])
                 if any(P_a[state_id,next_state_id,:]) == 1: #possible next state
@@ -219,7 +222,6 @@ def get_feat_map_from_states(states_dict, feat_map, P_a, problem_file_used, all_
             sys.stdout.flush()
 
     return feat_map
-
 
 def get_trajectories_from_traces(all_actions, trace_list, states_dict,scenarios):
     '''
@@ -245,7 +247,6 @@ def get_trajectories_from_traces(all_actions, trace_list, states_dict,scenarios)
 
     return np.array(trajectories)
 
-
 if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.realpath('__file__'))
     TRACE_ROOT_PATH = dir_path+'/'+'Train/'
@@ -253,7 +254,7 @@ if __name__ == "__main__":
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
     problem_file_used = 0
-    num_features = 6
+    num_features = 7
 
     all_actions = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5}
     inv_all_actions = {0:'A',1:'B',2:'C',3:'D',4:'E',5:'F'} 
@@ -265,6 +266,33 @@ if __name__ == "__main__":
     with open(PROBLEM_ROOT_PATH + 'problem.tpl.pddl', 'r') as f:
         og_template = f.readlines()
 
+    plan_switch = {}
+    plan_switch['goes start a (1)'] = ['left','up','up','right','right','right','up']
+    plan_switch['goes start e (2)'] = ['right','up','up','right','up']
+    plan_switch['goes start c (6)'] = ['right','right','right','right','right','up','up','left','left','left','up']
+    plan_switch['goes start f (8)'] = ['right','right','right','right','right','right','right','up','up','left','left','left','left','left','up']
+    plan_switch['goes start b (12)'] =['right','right','right','right','right','right','right','right','right','up','up','left','left','left','left','left','left','left','up']
+    plan_switch['goes start d (19)'] =['right','right','right','right','right','right','right','right','right','up','up','up','up','left','left','left','left','left','left','left','down']
+    plan_switch['goes start h (21)'] =['right','right','right','right','right','right','right','right','right','up','up','up','up','up','up','left','left','left','left','left','left','left','down','down','down']
+    # new_plan_switch = {}
+    
+    # for plan_prefix,plan in plan_switch.items():
+    #     prev = [1,0]
+    #     new_plan_switch[plan_prefix] = []
+    #     for step in plan:
+    #         now = copy.deepcopy(prev)
+    #         if step == 'right':
+    #             now[0]+=1
+    #         elif step == 'left':
+    #             now[0]-=1
+    #         elif step == 'down':
+    #             now[1]-=1
+    #         elif step == 'up':
+    #             now[1]+=1
+    #         new_plan_switch[plan_prefix].append(str(prev)+str(now))
+    #         prev = copy.deepcopy(now)
+    #pp.pprint(new_plan_switch)
+    # exit()
     
     states_dict, reverse_states_dict = get_state_map(all_actions)  # Generate state maps for all states
     N = len(states_dict)

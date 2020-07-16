@@ -1,0 +1,7 @@
+(eats_small_breakfast j)
+(dress_formally j)
+(make_instant_coffee j)
+(goes j need_twentyfive_minutes home rnearwork)
+(has_formal_meeting j rnearwork)
+(goes j need_five_minutes rnearwork work)
+; cost = 6 (unit cost)

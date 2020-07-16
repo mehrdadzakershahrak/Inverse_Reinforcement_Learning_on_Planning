@@ -33,10 +33,37 @@ def laven_dist(list1, list2):
   
     return dp[m][n] 
 
-def plan_distance(plan_a, plan_b):
-    if (not plan_a) and (not plan_b):
+def action_distance(plan_1, plan_2):
+    if (not plan_1) and (not plan_2):
         return 0
-    plan_a = set(plan_a)
-    plan_b = set(plan_b)
-    return 1.0-(len(plan_a.intersection(plan_b))/len(plan_a.union(plan_b)))
-
+    if plan_1 == plan_2:
+        return 0
+    #print(plan_a)
+    plan_a = set(plan_1)
+    plan_b = set(plan_2)
+    a_p = {}
+    b_p = {}
+    for action in plan_1:
+        if action not in a_p.keys():
+           a_p[action] = 1
+        else:
+            a_p[action]+=1
+    
+    for action in plan_2:
+        if action not in b_p.keys():
+           b_p[action] = 1
+        else:
+            b_p[action]+=1
+    
+    common_actions = set(a_p).intersection(set(b_p))
+    a_d_b = set(a_p).difference(set(b_p))
+    b_d_a = set(b_p).difference(set(a_p))
+    num = 0
+    for action in list(common_actions):
+        num+=abs(a_p[action]-b_p[action])
+    for action in list(a_d_b):
+        num+=a_p[action]
+    for action in list(b_d_a):
+        num+=b_p[action]
+    d = (num)*1.0/((max(len(plan_a),len(plan_b)))*1.0)
+    return d

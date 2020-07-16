@@ -1,0 +1,3 @@
+(goes start h)
+(goes h goal)
+; cost = 25 (general cost)

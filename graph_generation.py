@@ -9,9 +9,7 @@ from os import path
 import sys
 import copy
 from utils import *
-import IPython
-
-# Test scenario 3
+import IPython  
 
 def render_problem_template(D):
     '''
@@ -77,10 +75,10 @@ orders['3']['peg'] = ['E','A','C','B','D']
 orders['5']['manhattan'] =['A','E','C','D'] 
 orders['5']['random'] =['D','E','C','A'] 
 orders['5']['peg'] = ['E','A','C','D']
+
 orders['7']['manhattan'] = ['A','E','F','B']
 orders['7']['random'] = ['B','A','F','E']
 orders['7']['peg'] = ['E','A','F','B']
-
 
 dir_path = os.path.dirname(os.path.realpath('__file__'))
 TRACE_ROOT_PATH = dir_path+'/'+'Train/'
@@ -90,9 +88,33 @@ pp = pprint.PrettyPrinter(indent=4)
 problem_file_used = 0
 plan_costs = {}
 
+optimal_plan = {}
+optimal_plan['3'],_ = get_plan({'A':1,'B':1,'C':1,'D':1,'E':1,'F':0})
+optimal_plan['5'],_ = get_plan({'A':1,'B':0,'C':1,'D':1,'E':1,'F':0})
+optimal_plan['7'],_ = get_plan({'A':1,'B':1,'C':0,'D':0,'E':1,'F':1})
+
+first_plan,first_plan_cost = get_plan({'A':0,'B':0,'C':0,'D':0,'E':0,'F':0})
+
+all_plans = {}
+all_plans['3'] = {}
+all_plans['5']={}
+all_plans['7']={}
+all_plans['3']['manhattan'] = [first_plan]
+all_plans['3']['random'] = [first_plan]
+all_plans['3']['peg'] = [first_plan]
+all_plans['5']['manhattan'] =[first_plan] 
+all_plans['5']['random'] =[first_plan] 
+all_plans['5']['peg'] = [first_plan]
+all_plans['7']['manhattan'] = [first_plan]
+all_plans['7']['random'] = [first_plan]
+all_plans['7']['peg'] = [first_plan]
+
+
 for problem_number in orders.keys():
     plan_costs[problem_number] = {}
     for order_type in orders[problem_number]:
+        #plan_costs[problem_number][order_type] = [optimal_plan[problem_number],first_plan)]
+        print("*******")
         plan_costs[problem_number][order_type] = []
         for i in range(len(orders[problem_number][order_type])):
             exp_dict = {'A':0,'B':0,'C':0,'D':0,'E':0,'F':0}
@@ -102,8 +124,29 @@ for problem_number in orders.keys():
                     break
             print('-----'+str(problem_number)+'-----'+str(order_type)+'-----')
             print(exp_dict)
-            _,plan_cost = get_plan(exp_dict)
+            plan,plan_cost = get_plan(exp_dict)
+            #print(plan)
             #IPython.embed()
-            plan_costs[problem_number][order_type].append(plan_cost)
-            
+            #plan_costs[problem_number][order_type].append(plan_distance(optimal_plan[problem_number],plan))
+            all_plans[problem_number][order_type].append(plan)
+            #print(all_plans[problem_number][order_type])
+            # if i>0:
+            #     print(all_plans[problem_number][order_type][i-1])
+            #     print(plan)
+            #     plan_costs[problem_number][order_type].append(plan_distance(plan,all_plans[problem_number][order_type][i-1]))
+            # else:
+            #     print(first_plan)
+            #     print(plan)
+            #     plan_costs[problem_number][order_type].append(plan_distance(plan,first_plan))
+
+
+for problem_number in orders.keys():
+    plan_costs[problem_number] = {}
+    for order_type in orders[problem_number]:
+        plan_costs[problem_number][order_type] = []
+        for i in range(1,len(all_plans[problem_number][order_type])):
+            plan1 = all_plans[problem_number][order_type][i]
+            plan2 = all_plans[problem_number][order_type][i-1]
+            plan_costs[problem_number][order_type].append(plan_distance(plan1,plan2))   
+
 IPython.embed()
