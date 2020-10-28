@@ -3,7 +3,7 @@ import pprint
 import re
 import os
 from itertools import chain, combinations
-from feature_functions import laven_dist, plan_distance
+from feature_functions import laven_dist, plan_distance,action_distance
 import pickle
 from os import path
 import sys
@@ -181,15 +181,27 @@ def calculate_features(plan1, plan2, plan1_cost, plan2_cost,state1,state2):
     '''
     all_actions = ['$HAS_KEY','$HAS_PASSWORD','$HAS_ACCESSKEY','$HAS_LADDER','$HAS_ELECTRICITY']
     lav_dist = laven_dist(plan1, plan2) 
-    plan_dist = plan_distance(plan1, plan2)
+    plan_dist = action_distance(plan1, plan2)
     f1 = [0]*len(all_actions)
     f2 = [0]*len(all_actions)
+    f3 = [0]*len(all_actions)
+    # for a in range(len(all_actions)):
+    #     if a in state1:
+    #         f1[a]=1
+    #     if a in state2:
+    #         f2[a]=1
     for a in range(len(all_actions)):
-        if a in state1:
-            f1[a]=1
-        if a in state2:
-            f2[a]=1
-    f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
+        if a in state1 and a not in state2:
+            f3[a]=0
+        if a in state2 and a not in state1:
+            f3[a]=1
+        if a in state1 and a in state2 :
+            f3[a]=2
+        if a not in state1 and a not in state2:
+            f3[a]=3 
+    
+    #f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost),*np.append(np.array(f1),np.array(f2)).tolist()]
+    f = [lav_dist,plan_dist,abs(plan1_cost-plan2_cost),*f3]
     
     return f
 
@@ -315,11 +327,11 @@ def update_domain_template_and_problem_file(og_domain_template,problem_file_used
 
 
 if __name__ == "__main__":
-    TRACE_ROOT_PATH = '/headless/Desktop/Distance-Learning/Train/'
-    PROBLEM_ROOT_PATH = '/headless/Desktop/Distance-Learning/Archive/'
+    TRACE_ROOT_PATH = '/data/Distance-Learning/Train/'
+    PROBLEM_ROOT_PATH = '/data/Distance-Learning/Archive/'
     PLANNER_RELATIVE_PATH = '/FD/'
     pp = pprint.PrettyPrinter(indent=4)
-    num_features = 13
+    num_features = 8
 
 
     files_used = [1,2,3,4,5,6,7,8]

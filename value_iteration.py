@@ -71,7 +71,8 @@ def value_iteration(P_a, rewards, gamma, error=0.01, deterministic=True):
     return values, policy
 
 
-
+# norm = np.linalg.norm(my_array)
+# normal_array = my_array/norm 
 
 # class ValueIterationAgent(object):
 
